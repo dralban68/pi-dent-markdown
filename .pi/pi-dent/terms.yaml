@@ -1,0 +1,25 @@
+terms:
+  - id: markdown-tool
+    label: Markdown
+    meaning: "The tool that outlines, reads, and restructures a Markdown file by its sections."
+    owner: specs/markdown-tool.md
+    group: Markdown tool
+    key: confusable
+    status: active
+    distinguish:
+      - section
+    history:
+      - date: 2026-11-14
+        op: add
+  - id: section
+    label: section
+    meaning: A heading of a Markdown file together with the text and subsections under it.
+    owner: specs/markdown-tool.md
+    group: Markdown tool
+    key: confusable
+    status: active
+    reject:
+      - chapter
+    history:
+      - date: 2026-11-14
+        op: add

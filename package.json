@@ -1,0 +1,65 @@
+{
+  "name": "pi-dent-markdown",
+  "version": "0.1.0",
+  "description": "The Markdown tool of pi-dent, as a library: outline, read, edit and link-check Markdown files by heading",
+  "keywords": [
+    "markdown",
+    "pi-dent"
+  ],
+  "homepage": "https://github.com/dralban68/pi-dent-markdown#readme",
+  "bugs": "https://github.com/dralban68/pi-dent-markdown/issues",
+  "license": "MIT",
+  "author": "Chris B <dralban68@protonmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dralban68/pi-dent-markdown.git"
+  },
+  "files": [
+    "index.ts",
+    "lib/"
+  ],
+  "type": "module",
+  "main": "./index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "node --test --test-timeout=30000 test/",
+    "test:perf": "node --test --test-timeout=30000 perf/",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint .",
+    "fmt": "oxfmt .",
+    "fmt:check": "oxfmt --check .",
+    "check": "pnpm typecheck && pnpm lint && pnpm fmt:check && pnpm test"
+  },
+  "dependencies": {
+    "mdast-util-from-markdown": "^2.1.0",
+    "mdast-util-gfm-autolink-literal": "^2.1.0",
+    "mdast-util-gfm-table": "^2.0.1",
+    "micromark-extension-gfm-autolink-literal": "^2.1.0",
+    "micromark-extension-gfm-table": "^2.1.2",
+    "micromark-util-normalize-identifier": "^2.0.1"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-agent-core": "1.5.2",
+    "@earendil-works/pi-ai": "1.5.2",
+    "@earendil-works/pi-coding-agent": "1.5.2",
+    "@earendil-works/pi-tui": "1.5.2",
+    "@types/node": "^26.6.6",
+    "oxfmt": "^0.77.0",
+    "oxlint": "^1.93.0",
+    "typebox": "1.3.27",
+    "typescript": "^7.0.2"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-agent-core": "*",
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*",
+    "typebox": "*"
+  },
+  "engines": {
+    "node": ">=26"
+  },
+  "packageManager": "pnpm@12.18.0"
+}

@@ -1,0 +1,16 @@
+allowBuilds:
+  "@google/genai": false
+  protobufjs: false
+overrides:
+  # micromark 4.0.3 parses quotes and setext headings in quadratic time; see docs/markdown.md.
+  micromark: 4.0.2
+  # held at 2.0.3, the release paired with micromark 4.0.2; see docs/markdown.md.
+  micromark-core-commonmark: 2.0.3
+minimumReleaseAgeExclude:
+  - "@earendil-works/pi-agent-core@1.5.2"
+  - "@earendil-works/pi-ai@1.5.2"
+  - "@earendil-works/pi-codemode@1.5.2"
+  - "@earendil-works/pi-mcp@1.5.2"
+  - "@earendil-works/pi-schema@1.5.2"
+  - "@earendil-works/pi-telemetry@1.5.2"
+  - "@earendil-works/pi-tui@1.5.2"
