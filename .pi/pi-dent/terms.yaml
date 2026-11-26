@@ -1,4 +1,430 @@
 terms:
+  - id: action
+    label: action
+    meaning: "What one Markdown call does: outline, read, edit, or links."
+    owner: specs/markdown-tool.md
+    group: Markdown tool
+    key: shared
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: affected-group
+    label: affected group
+    meaning: "A group whose members or parent an operation changed, or whose parent's number its renumbering changed."
+    owner: specs/markdown-tool.md
+    group: Renumbering
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: argument-preparation
+    label: argument preparation
+    meaning: "The repair, before the host validates a call, of an operations argument sent as a JSON string or a lone object."
+    owner: specs/markdown-tool.md
+    group: Markdown tool
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: atx-heading
+    label: ATX heading
+    meaning: "A heading opened by one to six # characters, as CommonMark defines it."
+    owner: specs/markdown-tool.md
+    group: Documents
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: auto-numbered-heading
+    label: auto-numbered heading
+    meaning: "An unnumbered heading an operation places into a renumbered group, which takes a number there."
+    owner: specs/markdown-tool.md
+    group: Renumbering
+    key: local
+    status: active
+    distinguish:
+      - numbered-heading
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: base
+    label: base
+    meaning: "The numbered members of an affected group before the operation, with their numbers then."
+    owner: specs/markdown-tool.md
+    group: Renumbering
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: blank-line
+    label: blank line
+    meaning: "A line holding only spaces and tabs, or nothing."
+    owner: specs/markdown-tool.md
+    group: Documents
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: block-parsed-alone
+    label: block parsed alone
+    meaning: "A content block parsed by itself as a document, with no frontmatter recognized."
+    owner: specs/markdown-tool.md
+    group: Edit
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: child-session
+    label: child session
+    meaning: The isolated in-process session one dispatch runs in
+    owner: "../pi-dent-agent/specs/agent-tool.md"
+    group: pi-dent-agent
+    key: confusable
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: collapsed-section
+    label: collapsed section
+    meaning: "A descendant of the read section deeper than depth, none of whose ancestors below that section is collapsed."
+    owner: specs/markdown-tool.md
+    group: Outline and read
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: component
+    label: component
+    meaning: "A section's heading text, or (untitled) when empty, followed by [n] when earlier siblings share it."
+    owner: specs/markdown-tool.md
+    group: Section addresses
+    key: local
+    status: active
+    distinguish:
+      - number-component
+      - leading-component
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: content-block
+    label: content block
+    meaning: "The lines of an operation's content without leading and trailing blank lines."
+    owner: specs/markdown-tool.md
+    group: Edit
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: cut-line
+    label: cut line
+    meaning: "The closing line of a read that stopped before its range's end, naming the offset to continue with."
+    owner: specs/markdown-tool.md
+    group: Outline and read
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: destination
+    label: destination
+    meaning: "Where an insert or move places its block, given by position relative to at."
+    owner: specs/markdown-tool.md
+    group: Edit
+    key: confusable
+    status: active
+    distinguish:
+      - link-destination
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: destination-level
+    label: destination level
+    meaning: The level that fitting gives the first heading an insert or move places.
+    owner: specs/markdown-tool.md
+    group: Edit
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: display-line
+    label: display line
+    meaning: "A line of the read range, or a marker line standing for a collapsed section's further lines."
+    owner: specs/markdown-tool.md
+    group: Outline and read
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: document
+    label: document
+    meaning: "The text of a file after its frontmatter, parsed as a CommonMark document with the GFM table extension."
+    owner: specs/markdown-tool.md
+    group: Documents
+    key: confusable
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: end-line
+    label: end line
+    meaning: "A section's last non-blank line before the next heading of its level or higher, or before the end of the text."
+    owner: specs/markdown-tool.md
+    group: Sections
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: entry-line
+    label: entry line
+    meaning: "An outline entry's text line: its span, heading marks, component, and hidden count."
+    owner: specs/markdown-tool.md
+    group: Outline and read
+    key: local
+    status: active
+    distinguish:
+      - outline-entry
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: file-mutation-queue
+    label: file mutation queue
+    meaning: "The host's per-file serialization of its edit and write tools, which an edit call holds from its read to its write."
+    owner: specs/markdown-tool.md
+    group: Edit
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: fitting
+    label: fitting
+    meaning: "Shifting a block's heading levels by one difference so that its first heading takes a given level."
+    owner: specs/markdown-tool.md
+    group: Edit
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: flattening
+    label: flattening
+    meaning: "Replacing every maximal run of white space and of the characters U+0000–U+001F and U+007F–U+009F by one space, then removing a leading and a trailing space"
+    owner: "../pi-dent-agent/specs/search-tool.md"
+    group: pi-dent-agent
+    key: confusable
+    status: active
+    forms:
+      - flattened
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: frontmatter
+    label: frontmatter
+    meaning: The block of keys and values at the top of a Markdown resource file
+    owner: "../pi-dent-agent/specs/skill.md"
+    group: pi-dent-agent
+    key: confusable
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: full-address
+    label: full address
+    meaning: "The components of a section's ancestors and its own, joined by the separator."
+    owner: specs/markdown-tool.md
+    group: Section addresses
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: group
+    label: group
+    meaning: "The subsections of one section, or the top-level sections, as renumbering numbers them."
+    owner: specs/markdown-tool.md
+    group: Renumbering
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: heading
+    label: heading
+    meaning: An ATX or setext heading whose parent block is the document.
+    owner: specs/markdown-tool.md
+    group: Documents
+    key: shared
+    status: active
+    distinguish:
+      - section
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: heading-level
+    label: heading level
+    meaning: "A heading's level: the length of an ATX heading's opening sequence, or 1 or 2 for a setext heading."
+    owner: specs/markdown-tool.md
+    group: Documents
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: heading-line
+    label: heading line
+    meaning: The first line of a heading.
+    owner: specs/markdown-tool.md
+    group: Documents
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: heading-text
+    label: heading text
+    meaning: "An ATX heading's raw contents as written, or a setext heading's content lines joined by one space."
+    owner: specs/markdown-tool.md
+    group: Documents
+    key: shared
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: host
+    label: host
+    meaning: The pi process and extension API pi-dent runs in
+    owner: "../pi-dent-agent/specs/config-file.md"
+    group: pi-dent-agent
+    key: confusable
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: item-line
+    label: item line
+    meaning: "A link item's text line: its line, kind, and destination, label, and text when it has them."
+    owner: specs/markdown-tool.md
+    group: Links
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: leading-component
+    label: leading component
+    meaning: A component of a heading number other than its last.
+    owner: specs/markdown-tool.md
+    group: Renumbering
+    key: local
+    status: active
+    distinguish:
+      - component
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: line-count
+    label: line count
+    meaning: "The number of lines of a file's text, 0 for an empty text."
+    owner: specs/markdown-tool.md
+    group: Documents
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: line-ending
+    label: line ending
+    meaning: "A line feed, a carriage return not followed by a line feed, or a carriage return followed by a line feed."
+    owner: specs/markdown-tool.md
+    group: Documents
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: line-range
+    label: line range
+    meaning: "A pair of line numbers <a>-<b>, as an entry line shows a section's span, and as an address can start with to name the section of that reference span."
+    owner: specs/markdown-tool.md
+    group: Section addresses
+    key: shared
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+        meaning: "A leading <a>-<b> in an address, which restricts it to the section whose reference span is those lines."
+  - id: link-destination
+    label: link destination
+    meaning: "The URL or path a link or link reference definition points to, as CommonMark defines it."
+    owner: specs/markdown-tool.md
+    group: Links
+    key: local
+    status: active
+    distinguish:
+      - destination
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: link-item
+    label: link item
+    meaning: "One link, image, autolink, unused definition, or undefined reference that a links call lists."
+    owner: specs/markdown-tool.md
+    group: Links
+    key: shared
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: link-label
+    label: link label
+    meaning: "The bracketed label of a reference link or of a link reference definition, as CommonMark defines it."
+    owner: specs/markdown-tool.md
+    group: Links
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: mark
+    label: mark
+    meaning: "The line an operation designates, which makes the section headed there a touched section."
+    owner: specs/markdown-tool.md
+    group: Edit
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
   - id: markdown-tool
     label: Markdown
     meaning: "The tool that outlines, reads, and restructures a Markdown file by its sections."
@@ -11,6 +437,277 @@ terms:
     history:
       - date: 2026-11-14
         op: add
+  - id: marker-line
+    label: marker line
+    meaning: "The line that stands for a collapsed section's lines after its heading, with their count and first and last lines."
+    owner: specs/markdown-tool.md
+    group: Outline and read
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: model-facing-text
+    label: model-facing text
+    meaning: "A text of the Markdown tool that the model reads: its description, prompt snippet, or a parameter description."
+    owner: specs/markdown-tool.md
+    group: Markdown tool
+    key: shared
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: normalization
+    label: normalization
+    meaning: "Removing backticks, asterisks, and underscores from a component, collapsing its spaces and tabs, trimming, and lowercasing it."
+    owner: specs/markdown-tool.md
+    group: Section addresses
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: number-component
+    label: number component
+    meaning: "An address component that is a section number, optionally after a leading Section or §."
+    owner: specs/markdown-tool.md
+    group: Section addresses
+    key: local
+    status: active
+    distinguish:
+      - component
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: number-prefix
+    label: number prefix
+    meaning: "The runs of digits joined by dots, with an optional trailing dot, that start a numbered heading's text."
+    owner: specs/markdown-tool.md
+    group: Renumbering
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: numbered-heading
+    label: numbered heading
+    meaning: "A heading whose text starts with a number prefix, a space or tab, and more text."
+    owner: specs/markdown-tool.md
+    group: Renumbering
+    key: shared
+    status: active
+    distinguish:
+      - auto-numbered-heading
+      - renumbered-heading
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: numbered-member
+    label: numbered member
+    meaning: A member of a group whose heading is numbered or auto-numbered.
+    owner: specs/markdown-tool.md
+    group: Renumbering
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: operation
+    label: operation
+    meaning: "One element of an edit call's operations: a structural change applied to the text the earlier ones left."
+    owner: specs/markdown-tool.md
+    group: Edit
+    key: shared
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: outline
+    label: outline
+    meaning: "The action, and its result, that lists a file's sections with their line ranges down to a heading level."
+    owner: specs/markdown-tool.md
+    group: Markdown tool
+    key: shared
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: outline-entry
+    label: outline entry
+    meaning: "One section an outline lists, with its span, level, and hidden count."
+    owner: specs/markdown-tool.md
+    group: Outline and read
+    key: local
+    status: active
+    distinguish:
+      - entry-line
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: own-body
+    label: own body
+    meaning: "A section's non-blank-bounded lines between its heading and its first subsection or its end line."
+    owner: specs/markdown-tool.md
+    group: Sections
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: parameter-schema
+    label: parameter schema
+    meaning: The JSON object schema of the arguments of a Markdown call.
+    owner: specs/markdown-tool.md
+    group: Markdown tool
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: parse-budget
+    label: parse budget
+    meaning: "The 10000 ms that the work one call runs off the host's main thread may take in total."
+    owner: specs/markdown-tool.md
+    group: Markdown tool
+    key: shared
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: persisting-section
+    label: persisting section
+    meaning: A section whose heading persists from a heading of the text before the operation.
+    owner: specs/markdown-tool.md
+    group: Renumbering
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: preamble
+    label: preamble
+    meaning: "The non-blank-bounded lines of the document before its first heading; not a section."
+    owner: specs/markdown-tool.md
+    group: Sections
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: preview-line
+    label: preview line
+    meaning: "Four spaces and the flattened first line of a section's own body, shown under its entry line."
+    owner: specs/markdown-tool.md
+    group: Outline and read
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: read-range
+    label: read range
+    meaning: "The lines a read call can show: the addressed section's span, or the preamble's lines."
+    owner: specs/markdown-tool.md
+    group: Outline and read
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: reference-span
+    label: reference span
+    meaning: "The span a line range is compared with; in an edit call, that of the section in the file before the call."
+    owner: specs/markdown-tool.md
+    group: Section addresses
+    key: local
+    status: active
+    distinguish:
+      - span
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: removed-section
+    label: removed section
+    meaning: A section of the file before the call whose heading does not persist through every operation.
+    owner: specs/markdown-tool.md
+    group: Edit
+    key: local
+    status: active
+    distinguish:
+      - touched-section
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: renumbered-heading
+    label: renumbered heading
+    meaning: A heading whose number prefix the call changed.
+    owner: specs/markdown-tool.md
+    group: Renumbering
+    key: local
+    status: active
+    distinguish:
+      - numbered-heading
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: renumbering
+    label: renumbering
+    meaning: "Rewriting the number prefixes of an affected group's numbered members so that they run in sequence."
+    owner: specs/markdown-tool.md
+    group: Renumbering
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: revision
+    label: revision
+    meaning: "The first 8 lowercase hexadecimal digits of the SHA-256 digest of a file's bytes, which an edit call must name."
+    owner: specs/markdown-tool.md
+    group: Documents
+    key: shared
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: schema-rejection
+    label: schema rejection
+    meaning: "A call the host turns away because its arguments do not satisfy the tool's parameter schema"
+    owner: "../pi-dent-agent/specs/task.md"
+    group: pi-dent-agent
+    key: confusable
+    status: active
+    distinguish:
+      - tool-error
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: scope
+    label: scope
+    meaning: "The lines a links call reads: the addressed section's span, the preamble's lines, or the whole document."
+    owner: specs/markdown-tool.md
+    group: Links
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
   - id: section
     label: section
     meaning: A heading of a Markdown file together with the text and subsections under it.
@@ -20,6 +717,174 @@ terms:
     status: active
     reject:
       - chapter
+    distinguish:
+      - heading
     history:
       - date: 2026-11-14
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: section-address
+    label: section address
+    meaning: "A value that names a section by components joined by the separator, optionally after a copied line range."
+    owner: specs/markdown-tool.md
+    group: Section addresses
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: separator
+    label: separator
+    meaning: "The space, >, and space that join the components of an address."
+    owner: specs/markdown-tool.md
+    group: Section addresses
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: setext-heading
+    label: setext heading
+    meaning: "A heading whose content lines are underlined with = or -, as CommonMark defines it."
+    owner: specs/markdown-tool.md
+    group: Documents
+    key: shared
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: skipped-group
+    label: skipped group
+    meaning: A group whose numbers an edit left as written because they were not in sequence.
+    owner: specs/markdown-tool.md
+    group: Renumbering
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: span
+    label: span
+    meaning: The lines of a section from its heading line to its end line.
+    owner: specs/markdown-tool.md
+    group: Sections
+    key: local
+    status: active
+    distinguish:
+      - reference-span
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: standalone-entry
+    label: standalone entry
+    meaning: "The package's extension entry, extension.ts, that registers the Markdown tool without pi-dent."
+    owner: specs/markdown-tool.md
+    group: Markdown tool
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: subsection
+    label: subsection
+    meaning: A section whose parent is the given section.
+    owner: specs/markdown-tool.md
+    group: Sections
+    key: shared
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: task-row
+    label: task row
+    meaning: "The task registry entry holding one task's state"
+    owner: "../pi-dent-agent/specs/task-registry.md"
+    group: pi-dent-agent
+    key: confusable
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: tool-call-signal
+    label: tool-call signal
+    meaning: The abort signal the host passes to one tool execution
+    owner: "../pi-dent-agent/specs/task.md"
+    group: pi-dent-agent
+    key: confusable
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: tool-error
+    label: tool error
+    meaning: A tool result with isError true
+    owner: "../pi-dent-agent/specs/task.md"
+    group: pi-dent-agent
+    key: confusable
+    status: active
+    distinguish:
+      - schema-rejection
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: top-level-section
+    label: top-level section
+    meaning: A section with no parent section.
+    owner: specs/markdown-tool.md
+    group: Sections
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: touched-section
+    label: touched section
+    meaning: A section whose heading line bears a mark after the last operation.
+    owner: specs/markdown-tool.md
+    group: Edit
+    key: local
+    status: active
+    distinguish:
+      - removed-section
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: trailing-dot
+    label: trailing dot
+    meaning: "The dot that ends a number prefix, as in 3. Find."
+    owner: specs/markdown-tool.md
+    group: Renumbering
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: undefined-reference
+    label: undefined-reference
+    meaning: A full or collapsed reference that would resolve if a link reference definition matched its label.
+    owner: specs/markdown-tool.md
+    group: Links
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
+        op: add
+  - id: unused-definition
+    label: unused-definition
+    meaning: "A link reference definition whose label no reference matches, or that follows another with a matching label."
+    owner: specs/markdown-tool.md
+    group: Links
+    key: local
+    status: active
+    history:
+      - date: 2026-11-26
         op: add
