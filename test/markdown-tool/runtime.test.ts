@@ -9,7 +9,7 @@ import { bytesOf, call, cleanupRoots, runtime, tempDir, write } from "./support.
 import { must } from "../support/must.ts";
 
 /**
- * specs/markdown-tool.md Sections 2.1 and 5.1: the path forms, the abort
+ * specs/markdown-tool.md#file-access and specs/markdown-tool.md#edit-applying: the path forms, the abort
  * contract, and the host's file mutation queue, which an `edit` call holds from
  * before its read until its write ends.
  */
@@ -27,7 +27,7 @@ async function outlineOf(
   return { reported: outcome.details.path, entry: outcome.lines[1] };
 }
 
-test("Section 2.1: a relative path, with or without a leading @, resolves against the session's cwd", async () => {
+test("specs/markdown-tool.md#file-access: a relative path, with or without a leading @, resolves against the session's cwd", async () => {
   const work = tempDir();
   const home = tempDir();
   try {
@@ -45,7 +45,7 @@ test("Section 2.1: a relative path, with or without a leading @, resolves agains
   }
 });
 
-test("Section 2.1: a ~/ path resolves against the home directory, and a bare ~ names it", async () => {
+test("specs/markdown-tool.md#file-access: a ~/ path resolves against the home directory, and a bare ~ names it", async () => {
   const work = tempDir();
   const home = tempDir();
   try {
@@ -68,7 +68,7 @@ test("Section 2.1: a ~/ path resolves against the home directory, and a bare ~ n
   }
 });
 
-test("Section 2.1: a bare @ names the session's cwd, and a padded absolute path names that file", async () => {
+test("specs/markdown-tool.md#file-access: a bare @ names the session's cwd, and a padded absolute path names that file", async () => {
   const work = tempDir();
   const other = tempDir();
   try {
@@ -86,7 +86,7 @@ test("Section 2.1: a bare @ names the session's cwd, and a padded absolute path 
   }
 });
 
-test("Section 2.1: a leading @ is dropped from the path a call reads", async () => {
+test("specs/markdown-tool.md#file-access: a leading @ is dropped from the path a call reads", async () => {
   const dir = tempDir();
   try {
     write(dir, "a.md", DOCUMENT);
@@ -100,7 +100,7 @@ test("Section 2.1: a leading @ is dropped from the path a call reads", async () 
   }
 });
 
-test("Section 2.1: a ~ path resolves against the home directory", async () => {
+test("specs/markdown-tool.md#file-access: a ~ path resolves against the home directory", async () => {
   const home = tempDir();
   const work = tempDir();
   try {
@@ -115,7 +115,7 @@ test("Section 2.1: a ~ path resolves against the home directory", async () => {
   }
 });
 
-test("Section 5.1: an aborted outline or read ends as a tool error", async () => {
+test("specs/markdown-tool.md#edit-applying: an aborted outline or read ends as a tool error", async () => {
   const dir = tempDir();
   try {
     write(dir, "a.md", DOCUMENT);
@@ -138,7 +138,7 @@ test("Section 5.1: an aborted outline or read ends as a tool error", async () =>
   }
 });
 
-test("Section 5.1: an edit aborted before its write writes nothing", async () => {
+test("specs/markdown-tool.md#edit-applying: an edit aborted before its write writes nothing", async () => {
   const dir = tempDir();
   try {
     write(dir, "a.md", DOCUMENT);
@@ -175,7 +175,7 @@ test("Section 5.1: an edit aborted before its write writes nothing", async () =>
   }
 });
 
-test("Section 5.1: an abort during the write still returns the result", async () => {
+test("specs/markdown-tool.md#edit-applying: an abort during the write still returns the result", async () => {
   const dir = tempDir();
   try {
     write(dir, "a.md", DOCUMENT);
@@ -209,7 +209,7 @@ test("Section 5.1: an abort during the write still returns the result", async ()
   }
 });
 
-test("Section 5.1: an edit holds the file mutation queue from before its read until its write ends", async () => {
+test("specs/markdown-tool.md#edit-applying: an edit holds the file mutation queue from before its read until its write ends", async () => {
   const dir = tempDir();
   try {
     write(dir, "a.md", DOCUMENT);
@@ -254,7 +254,7 @@ test("Section 5.1: an edit holds the file mutation queue from before its read un
   }
 });
 
-test("Section 5.1: an edit that fails a check leaves the queue without writing", async () => {
+test("specs/markdown-tool.md#edit-applying: an edit that fails a check leaves the queue without writing", async () => {
   const dir = tempDir();
   try {
     write(dir, "a.md", DOCUMENT);
@@ -294,7 +294,7 @@ test("Section 5.1: an edit that fails a check leaves the queue without writing",
 });
 
 test(
-  "Section 2.1: a FIFO is not a regular file, and opening it does not wait for a writer",
+  "specs/markdown-tool.md#file-access: a FIFO is not a regular file, and opening it does not wait for a writer",
   { skip: process.platform === "win32" },
   async () => {
     const dir = tempDir();
@@ -315,7 +315,7 @@ test(
   },
 );
 
-test("Section 2.1: a file over the limit reports its size, not the bytes read", async () => {
+test("specs/markdown-tool.md#file-access: a file over the limit reports its size, not the bytes read", async () => {
   const dir = tempDir();
   try {
     writeFileSync(join(dir, "big.md"), "x".repeat(5_000_000));

@@ -4,7 +4,7 @@ import { call, cleanupRoots, runtime, tempDir, write } from "./support.ts";
 import { must } from "../support/must.ts";
 
 /**
- * specs/markdown-tool.md Section 4: the read range, the offset check, the
+ * specs/markdown-tool.md specs/markdown-tool.md#action-read: the read range, the offset check, the
  * display lines with collapsed sections, the shown lines with their bounds, the
  * end and cut markers, and the `details` shape.
  */
@@ -51,7 +51,7 @@ async function read(
   }
 }
 
-test("Section 4: a whole section, its header, and the end marker", async () => {
+test("specs/markdown-tool.md#action-read: a whole section, its header, and the end marker", async () => {
   const outcome = await read(DOCUMENT, { section: "One A" });
   const revision = must(outcome.details.revision);
   assert.deepEqual(outcome.lines, [
@@ -74,7 +74,7 @@ test("Section 4: a whole section, its header, and the end marker", async () => {
   });
 });
 
-test("Section 4: the preamble is readable and has no level", async () => {
+test("specs/markdown-tool.md#action-read: the preamble is readable and has no level", async () => {
   const text = ["intro", "", "# A", "", "text", ""].join("\n");
   const outcome = await read(text, { section: "(preamble)" });
   assert.equal(outcome.isError, false);
@@ -89,7 +89,7 @@ test("Section 4: the preamble is readable and has no level", async () => {
   assert.equal(none.text, "a.md has no preamble");
 });
 
-test("Section 4: an offset outside the range is rejected", async () => {
+test("specs/markdown-tool.md#action-read: an offset outside the range is rejected", async () => {
   const outside = await read(DOCUMENT, { section: "One A", offset: 12 });
   assert.equal(outside.isError, true);
   assert.equal(outside.text, "offset 12 is outside Doc > One > One A (lines 9-11)");
@@ -97,7 +97,7 @@ test("Section 4: an offset outside the range is rejected", async () => {
   assert.equal(below.text, "offset 8 is outside Doc > One > One A (lines 9-11)");
 });
 
-test("Section 4: depth collapses deeper sections to their heading line and a marker", async () => {
+test("specs/markdown-tool.md#action-read: depth collapses deeper sections to their heading line and a marker", async () => {
   const outcome = await read(DOCUMENT, { section: "Doc", depth: 2 });
   assert.deepEqual(outcome.lines.slice(1), [
     "# Doc",
@@ -122,7 +122,7 @@ test("Section 4: depth collapses deeper sections to their heading line and a mar
   assert.equal(outcome.details.to, 19);
 });
 
-test("Section 4: a collapsed setext section shows all its heading's lines before the marker", async () => {
+test("specs/markdown-tool.md#action-read: a collapsed setext section shows all its heading's lines before the marker", async () => {
   const text = ["# Doc", "", "Deep", "Setext", "------", "", "body one", "", "more", ""].join("\n");
   const outcome = await read(text, { section: "Doc", depth: 1 });
   assert.deepEqual(outcome.lines.slice(1), [
@@ -137,7 +137,7 @@ test("Section 4: a collapsed setext section shows all its heading's lines before
   assert.equal(outcome.details.to, 9);
 });
 
-test("Section 4: a collapsed heading with nothing under it gets no marker line", async () => {
+test("specs/markdown-tool.md#action-read: a collapsed heading with nothing under it gets no marker line", async () => {
   const text = ["# Doc", "", "## Empty", "", "Lone", "----", "", "## Last", "", "body", ""].join(
     "\n",
   );
@@ -156,7 +156,7 @@ test("Section 4: a collapsed heading with nothing under it gets no marker line",
   ]);
 });
 
-test("Section 4: a collapsed section deeper than another collapsed one is not shown at all", async () => {
+test("specs/markdown-tool.md#action-read: a collapsed section deeper than another collapsed one is not shown at all", async () => {
   const text = ["# Doc", "", "## One", "", "### One A", "", "#### Deep", "", "text", ""].join("\n");
   const outcome = await read(text, { section: "Doc", depth: 2 });
   assert.deepEqual(outcome.lines.slice(1), [
@@ -170,7 +170,7 @@ test("Section 4: a collapsed section deeper than another collapsed one is not sh
   ]);
 });
 
-test("Section 4: limit pages the display lines and the cut marker names the next offset", async () => {
+test("specs/markdown-tool.md#action-read: limit pages the display lines and the cut marker names the next offset", async () => {
   const first = await read(DOCUMENT, { section: "Doc", depth: 2, limit: 5 });
   assert.deepEqual(first.lines.slice(1), [
     "# Doc",
@@ -202,7 +202,7 @@ test("Section 4: limit pages the display lines and the cut marker names the next
   assert.equal(marker.details.to, 11);
 });
 
-test("Section 4: the last display line's read has no cut marker and no next", async () => {
+test("specs/markdown-tool.md#action-read: the last display line's read has no cut marker and no next", async () => {
   const outcome = await read(DOCUMENT, { section: "Doc", depth: 2, limit: 100, offset: 17 });
   assert.deepEqual(outcome.lines.slice(1), ["## Two", "", "body two", "--- end of section ---"]);
   assert.equal("next" in outcome.details, false);
@@ -210,7 +210,7 @@ test("Section 4: the last display line's read has no cut marker and no next", as
   assert.equal(outcome.details.to, 19);
 });
 
-test("Section 4: the shown lines stay within 50000 characters, and a longer first line is cut", async () => {
+test("specs/markdown-tool.md#action-read: the shown lines stay within 50000 characters, and a longer first line is cut", async () => {
   const line = "z".repeat(20000);
   const text = ["# Doc", "", line, line, line, ""].join("\n");
   const outcome = await read(text, { section: "Doc" });
@@ -228,7 +228,7 @@ test("Section 4: the shown lines stay within 50000 characters, and a longer firs
   assert.equal(must(cut.lines[1]).endsWith("\u2026"), true);
 });
 
-test("Section 4: an unknown or ambiguous address is a tool error", async () => {
+test("specs/markdown-tool.md#action-read: an unknown or ambiguous address is a tool error", async () => {
   const unknown = await read(DOCUMENT, { section: "Nope" });
   assert.equal(unknown.isError, true);
   assert.equal(unknown.text, 'no section "Nope" in a.md. Run outline to list its sections.');

@@ -15,9 +15,9 @@ import {
 import { must } from "../support/must.ts";
 
 /**
- * specs/markdown-tool.md Section 2: the file's text and lines (Section 2.1), the
- * parse (Section 2.2), the sections (Section 2.3), and the section addresses
- * (Section 2.4), checked through the outline, read, and edit actions.
+ * specs/markdown-tool.md specs/markdown-tool.md#documents: the file's text and lines (specs/markdown-tool.md#file-access), the
+ * parse (specs/markdown-tool.md#parsing), the sections (specs/markdown-tool.md#sections), and the section addresses
+ * (specs/markdown-tool.md#section-addresses), checked through the outline, read, and edit actions.
  */
 
 /** The outline of a temporary `a.md` holding `text`; the call must succeed. */
@@ -70,7 +70,7 @@ const PARSING_FIXTURE = [
   "",
 ].join("\n");
 
-test("Section 2.2: code blocks, quotes, lists, and HTML blocks hold no heading", async () => {
+test("specs/markdown-tool.md#parsing: code blocks, quotes, lists, and HTML blocks hold no heading", async () => {
   try {
     assert.deepEqual(await bodyOf(PARSING_FIXTURE), [
       "1-32 # Top",
@@ -86,7 +86,7 @@ test("Section 2.2: code blocks, quotes, lists, and HTML blocks hold no heading",
   }
 });
 
-test("Section 2.2: setext headings take their level from the underline and keep their content lines", async () => {
+test("specs/markdown-tool.md#parsing: setext headings take their level from the underline and keep their content lines", async () => {
   try {
     assert.deepEqual(await bodyOf("Title\n=====\n\ntext\n"), ["1-4 # Title"]);
     assert.deepEqual(await bodyOf("Section\n-------\n\ntext\n"), ["1-4 ## Section"]);
@@ -97,7 +97,7 @@ test("Section 2.2: setext headings take their level from the underline and keep 
   }
 });
 
-test("Section 2.2: an ATX heading's text is its raw contents, kept as written", async () => {
+test("specs/markdown-tool.md#parsing: an ATX heading's text is its raw contents, kept as written", async () => {
   const cases: [string, string[]][] = [
     ["## foo ##\n", ["1-1 ## foo"]],
     ["# foo#\n", ["1-1 # foo#"]],
@@ -119,7 +119,7 @@ test("Section 2.2: an ATX heading's text is its raw contents, kept as written", 
   }
 });
 
-test("Section 2.2: a table followed by a thematic break makes no setext heading", async () => {
+test("specs/markdown-tool.md#parsing: a table followed by a thematic break makes no setext heading", async () => {
   try {
     const text = ["| a | b |", "| - | - |", "| 1 | 2 |", "---", "", "# After", ""].join("\n");
     assert.deepEqual(await bodyOf(text), ["1-4 (preamble)", "6-6 # After"]);
@@ -130,7 +130,7 @@ test("Section 2.2: a table followed by a thematic break makes no setext heading"
 
 const DEFINED_SETEXT = "[foo]: /url\nBar\n===\n\nSee [foo].\n";
 
-test("Section 2.2: a setext heading after link reference definitions starts at its content line", async () => {
+test("specs/markdown-tool.md#parsing: a setext heading after link reference definitions starts at its content line", async () => {
   try {
     assert.deepEqual(await bodyOf(DEFINED_SETEXT), ["1-1 (preamble)", "2-5 # Bar"]);
     assert.deepEqual(await bodyOf("[a]: /x\n[b]: /y\nBar\n---\n"), [
@@ -147,7 +147,7 @@ test("Section 2.2: a setext heading after link reference definitions starts at i
   }
 });
 
-test("Section 4: a read of a setext heading after link reference definitions shows its own lines", async () => {
+test("specs/markdown-tool.md#action-read: a read of a setext heading after link reference definitions shows its own lines", async () => {
   const dir = tempDir();
   try {
     const name = write(dir, "a.md", DEFINED_SETEXT);
@@ -167,7 +167,7 @@ test("Section 4: a read of a setext heading after link reference definitions sho
   }
 });
 
-test("Section 5.1: renaming a setext heading after link reference definitions keeps the definitions", async () => {
+test("specs/markdown-tool.md#edit-applying: renaming a setext heading after link reference definitions keeps the definitions", async () => {
   const dir = tempDir();
   try {
     const name = write(dir, "a.md", DEFINED_SETEXT);
@@ -186,7 +186,7 @@ test("Section 5.1: renaming a setext heading after link reference definitions ke
   }
 });
 
-test("Section 2.2: frontmatter is line 1 through the first later `---` line", async () => {
+test("specs/markdown-tool.md#parsing: frontmatter is line 1 through the first later `---` line", async () => {
   try {
     assert.deepEqual(await bodyOf(["---", "title: x", "---", "", "# A", ""].join("\n")), [
       "1-3 (frontmatter)",
@@ -206,7 +206,7 @@ test("Section 2.2: frontmatter is line 1 through the first later `---` line", as
   }
 });
 
-test("Section 2.1: a leading U+FEFF is not part of line 1, and CRLF, CR, and mixed endings split lines", async () => {
+test("specs/markdown-tool.md#file-access: a leading U+FEFF is not part of line 1, and CRLF, CR, and mixed endings split lines", async () => {
   const dir = tempDir();
   try {
     writeFileSync(`${dir}/bom.md`, new Uint8Array([0xef, 0xbb, 0xbf, 0x23, 0x20, 0x41, 0x0a]));
@@ -222,7 +222,7 @@ test("Section 2.1: a leading U+FEFF is not part of line 1, and CRLF, CR, and mix
   }
 });
 
-test("Section 2.1: a line ending at the end of the text starts no further line", async () => {
+test("specs/markdown-tool.md#file-access: a line ending at the end of the text starts no further line", async () => {
   const cases: [string, string][] = [
     ["", "0 lines"],
     ["a", "1 lines"],
@@ -240,7 +240,7 @@ test("Section 2.1: a line ending at the end of the text starts no further line",
   }
 });
 
-test("Section 2.1: a revision is 8 lowercase hexadecimal digits of the SHA-256 of the bytes", async () => {
+test("specs/markdown-tool.md#file-access: a revision is 8 lowercase hexadecimal digits of the SHA-256 of the bytes", async () => {
   try {
     const outcome = await outlineOf("# A\n");
     const expected = createHash("sha256").update("# A\n").digest("hex").slice(0, 8);
@@ -251,7 +251,7 @@ test("Section 2.1: a revision is 8 lowercase hexadecimal digits of the SHA-256 o
   }
 });
 
-test("Section 2.3: a section ends at its last non-blank line before the next same-or-shallower heading", async () => {
+test("specs/markdown-tool.md#sections: a section ends at its last non-blank line before the next same-or-shallower heading", async () => {
   try {
     const text = ["# A", "", "text", "", "### B", "", "text", "", "## C", "", "text", "", ""].join(
       "\n",
@@ -262,7 +262,7 @@ test("Section 2.3: a section ends at its last non-blank line before the next sam
   }
 });
 
-test("Section 2.3: the preamble is the text before the first heading", async () => {
+test("specs/markdown-tool.md#sections: the preamble is the text before the first heading", async () => {
   try {
     assert.deepEqual(await bodyOf(["intro", "", "# A", "", "text", ""].join("\n")), [
       "1-1 (preamble)",
@@ -282,7 +282,7 @@ test("Section 2.3: the preamble is the text before the first heading", async () 
   }
 });
 
-test("Section 2.3: a section's own body stops before its first subsection", async () => {
+test("specs/markdown-tool.md#sections: a section's own body stops before its first subsection", async () => {
   const dir = tempDir();
   try {
     const instance = runtime();
@@ -301,7 +301,7 @@ test("Section 2.3: a section's own body stops before its first subsection", asyn
   }
 });
 
-test("Section 2.4: components carry ` [<n>]` for repeated sibling texts", async () => {
+test("specs/markdown-tool.md#section-addresses: components carry ` [<n>]` for repeated sibling texts", async () => {
   try {
     const text = ["# A", "", "## X", "", "## X", "", "## X", "", "# B", "", "## X", ""].join("\n");
     assert.deepEqual(await bodyOf(text), [
@@ -317,7 +317,7 @@ test("Section 2.4: components carry ` [<n>]` for repeated sibling texts", async 
   }
 });
 
-test("Section 2.4: an empty heading text is (untitled)", async () => {
+test("specs/markdown-tool.md#section-addresses: an empty heading text is (untitled)", async () => {
   try {
     assert.deepEqual(await bodyOf("#\n\n##\n"), ["1-3 # (untitled)", "3-3 ## (untitled)"]);
   } finally {
@@ -325,7 +325,7 @@ test("Section 2.4: an empty heading text is (untitled)", async () => {
   }
 });
 
-test("Section 2.4: a missing address lists the sections whose component contains its last component", async () => {
+test("specs/markdown-tool.md#section-addresses: a missing address lists the sections whose component contains its last component", async () => {
   const dir = tempDir();
   try {
     const instance = runtime();
@@ -347,7 +347,7 @@ test("Section 2.4: a missing address lists the sections whose component contains
   }
 });
 
-test("Section 5.4: only a number prefix in its form numbers a heading", async () => {
+test("specs/markdown-tool.md#renumbering: only a number prefix in its form numbers a heading", async () => {
   const dir = tempDir();
   try {
     const instance = runtime();
@@ -391,7 +391,7 @@ test("Section 5.4: only a number prefix in its form numbers a heading", async ()
   }
 });
 
-test("Section 2.2: an outline shows a heading's line range and a frontmatter's lines", async () => {
+test("specs/markdown-tool.md#parsing: an outline shows a heading's line range and a frontmatter's lines", async () => {
   const dir = tempDir();
   try {
     const name = write(
@@ -413,7 +413,7 @@ test("Section 2.2: an outline shows a heading's line range and a frontmatter's l
   }
 });
 
-test("Section 2.1: a file's bytes are read as Markdown whatever its name", async () => {
+test("specs/markdown-tool.md#file-access: a file's bytes are read as Markdown whatever its name", async () => {
   const dir = tempDir();
   try {
     const name = write(dir, "notes.txt", "# A\n");
@@ -425,7 +425,7 @@ test("Section 2.1: a file's bytes are read as Markdown whatever its name", async
   }
 });
 
-test("Section 2.1: the file access checks, in their order", async () => {
+test("specs/markdown-tool.md#file-access: the file access checks, in their order", async () => {
   const dir = tempDir();
   try {
     const instance = runtime();
@@ -461,7 +461,7 @@ test("Section 2.1: the file access checks, in their order", async () => {
   }
 });
 
-test("Section 2.1: an edit of a file whose revision differs is rejected", async () => {
+test("specs/markdown-tool.md#file-access: an edit of a file whose revision differs is rejected", async () => {
   const dir = tempDir();
   try {
     const instance = runtime();

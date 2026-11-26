@@ -4,7 +4,7 @@ import { Text } from "@earendil-works/pi-tui";
 import { makeMarkdownTool, markdownRuntime } from "../../lib/markdown-tool.ts";
 
 /**
- * specs/markdown-tool.md Section 7: `renderCall` shows the action, the path, the
+ * specs/markdown-tool.md specs/markdown-tool.md#rendering: `renderCall` shows the action, the path, the
  * section, and one line per operation, leaves out values that are not yet
  * strings, never throws, and returns a component with no padding and no
  * background of its own.
@@ -34,7 +34,7 @@ function renderCall(args: unknown): Rendered {
   return { lines: (component as Text).render(80).map((line) => line.trimEnd()) };
 }
 
-test("Section 7: a call line shows the action and the path, and the section after ›", () => {
+test("specs/markdown-tool.md#rendering: a call line shows the action and the path, and the section after ›", () => {
   assert.deepEqual(renderCall({ action: "outline", path: "a.md" }).lines, [
     "Markdown outline a.md",
   ]);
@@ -43,7 +43,7 @@ test("Section 7: a call line shows the action and the path, and the section afte
   ]);
 });
 
-test("Section 7: an edit call adds one line per operation with its string values", () => {
+test("specs/markdown-tool.md#rendering: an edit call adds one line per operation with its string values", () => {
   const lines = renderCall({
     action: "edit",
     path: "a.md",
@@ -61,7 +61,7 @@ test("Section 7: an edit call adds one line per operation with its string values
   ]);
 });
 
-test("Section 7: values that are not yet strings are left out and renderCall does not throw", () => {
+test("specs/markdown-tool.md#rendering: values that are not yet strings are left out and renderCall does not throw", () => {
   assert.deepEqual(renderCall({}).lines, ["Markdown"]);
   assert.deepEqual(renderCall({ action: "outline" }).lines, ["Markdown outline"]);
   assert.deepEqual(
@@ -74,7 +74,7 @@ test("Section 7: values that are not yet strings are left out and renderCall doe
   assert.deepEqual(renderCall({ operations: "not an array" }).lines, ["Markdown"]);
 });
 
-test("Section 7: the component carries no padding and no background of its own", () => {
+test("specs/markdown-tool.md#rendering: the component carries no padding and no background of its own", () => {
   const slot = tool.renderCall;
   assert.notEqual(slot, undefined);
   const component =
@@ -94,7 +94,7 @@ test("Section 7: the component carries no padding and no background of its own",
   }
 });
 
-test("Section 7: the component is reused across renders of the same row", () => {
+test("specs/markdown-tool.md#rendering: the component is reused across renders of the same row", () => {
   const slot = tool.renderCall;
   assert.notEqual(slot, undefined);
   if (slot === undefined) return;

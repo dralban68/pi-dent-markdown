@@ -68,7 +68,7 @@ export function stringField(details: Record<string, unknown>, name: string): str
   return value;
 }
 
-/** The revision an outline of a file shows (Section 2.1). */
+/** The revision an outline of a file shows (specs/markdown-tool.md#file-access). */
 export async function revisionOf(
   instance: MarkdownRuntime,
   cwd: string,

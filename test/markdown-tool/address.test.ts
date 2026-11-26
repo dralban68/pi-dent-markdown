@@ -4,7 +4,7 @@ import { bytesOf, call, cleanupRoots, revisionOf, runtime, tempDir, write } from
 import { must } from "../support/must.ts";
 
 /**
- * specs/markdown-tool.md Section 2.4 through the tool: the three matching
+ * specs/markdown-tool.md specs/markdown-tool.md#section-addresses through the tool: the three matching
  * steps, the ` [<n>]` suffix, the preamble, and the rejection of an address an
  * earlier operation renumbered onto a heading text of the file.
  */
@@ -38,7 +38,7 @@ async function edit(
   }
 }
 
-test("Section 2.4: an address matches exactly, then without markup and case, then without a number", async () => {
+test("specs/markdown-tool.md#section-addresses: an address matches exactly, then without markup and case, then without a number", async () => {
   const exact = await read(NESTED, "Doc > One > One A");
   assert.equal(exact.isError, false);
   assert.match(exact.text, /· lines 5-7 ·/);
@@ -50,7 +50,7 @@ test("Section 2.4: an address matches exactly, then without markup and case, the
   assert.match(bare.text, /· lines 5-7 ·/);
 });
 
-test("Section 2.4: a repeated sibling text takes the ` [<n>]` suffix", async () => {
+test("specs/markdown-tool.md#section-addresses: a repeated sibling text takes the ` [<n>]` suffix", async () => {
   const text = ["# A", "", "## X", "", "first", "", "## X", "", "second", ""].join("\n");
   const first = await read(text, "X");
   assert.match(first.text, /first/);
@@ -69,7 +69,7 @@ test("Section 2.4: a repeated sibling text takes the ` [<n>]` suffix", async () 
   );
 });
 
-test("Section 2.4: an address an earlier operation renumbered onto an old heading text is refused", async () => {
+test("specs/markdown-tool.md#section-addresses: an address an earlier operation renumbered onto an old heading text is refused", async () => {
   const text = [
     "# Doc",
     "",
@@ -102,7 +102,7 @@ test("Section 2.4: an address an earlier operation renumbered onto an old headin
   assert.equal(named.file, "# Doc\n\n## 1. Alpha\n");
 });
 
-test("Section 2.4: an address the call itself wrote is not the renumbered-address rejection", async () => {
+test("specs/markdown-tool.md#section-addresses: an address the call itself wrote is not the renumbered-address rejection", async () => {
   const text = [
     "# Doc",
     "",
@@ -125,7 +125,7 @@ test("Section 2.4: an address the call itself wrote is not the renumbered-addres
   assert.equal(outcome.file.includes("### 1.1 Renamed"), true);
 });
 
-test("Section 2.4: an unknown address lists similar sections or the outline advice", async () => {
+test("specs/markdown-tool.md#section-addresses: an unknown address lists similar sections or the outline advice", async () => {
   const similar = await read(NESTED, "Tw");
   assert.equal(similar.isError, true);
   assert.equal(similar.text, 'no section "Tw" in a.md. Similar: Doc > Two');
@@ -138,7 +138,7 @@ test("Section 2.4: an unknown address lists similar sections or the outline advi
   assert.equal(none.text, 'no section "zzz" in a.md. Run outline to list its sections.');
 });
 
-test("Section 2.4: (preamble) names the preamble for read and for replace_body", async () => {
+test("specs/markdown-tool.md#section-addresses: (preamble) names the preamble for read and for replace_body", async () => {
   const text = ["intro", "", "# A", "", "text", ""].join("\n");
   assert.match((await read(text, "(preamble)")).text, /· \(preamble\) · lines 1-1 ·/);
   const replaced = await edit(text, [
@@ -147,7 +147,7 @@ test("Section 2.4: (preamble) names the preamble for read and for replace_body",
   assert.equal(must(replaced.file.split("\n")[0]), "new intro");
 });
 
-test("Section 2.4: an ancestor component matches in order but need not be consecutive", async () => {
+test("specs/markdown-tool.md#section-addresses: an ancestor component matches in order but need not be consecutive", async () => {
   const outcome = await read(NESTED, "Doc > One A");
   assert.equal(outcome.isError, false);
   assert.match(outcome.text, /· lines 5-7 ·/);
@@ -157,7 +157,7 @@ const RANGED = ["# Alpha", "", "## Dup", "", "one", "", "# Beta", "", "## Dup", 
   "\n",
 );
 
-test("Section 2.4: a line range matches only the section whose reference span it gives", async () => {
+test("specs/markdown-tool.md#section-addresses: a line range matches only the section whose reference span it gives", async () => {
   const beta = await read(RANGED, "9-11 Dup");
   assert.equal(beta.isError, false);
   assert.match(beta.text, /· Beta > Dup · lines 9-11 ·/);
@@ -179,7 +179,7 @@ test("Section 2.4: a line range matches only the section whose reference span it
   assert.equal(unknown.text, 'no section "5-9 Zeta" in a.md. Run outline to list its sections.');
 });
 
-test("Section 2.4: a trailing ` [<n>]` is dropped from the last component only with a line range", async () => {
+test("specs/markdown-tool.md#section-addresses: a trailing ` [<n>]` is dropped from the last component only with a line range", async () => {
   const ranged = await read(RANGED, "9-11 Dup [2]");
   assert.equal(ranged.isError, false);
   assert.match(ranged.text, /· Beta > Dup · lines 9-11 ·/);
@@ -188,7 +188,7 @@ test("Section 2.4: a trailing ` [<n>]` is dropped from the last component only w
   assert.equal(unranged.text, 'no section "Dup [2]" in a.md. Run outline to list its sections.');
 });
 
-test("Section 2.4 step 4: a line range also holds for a number component", async () => {
+test("specs/markdown-tool.md#section-addresses step 4: a line range also holds for a number component", async () => {
   const text = [
     "# Spec",
     "",
@@ -212,12 +212,12 @@ test("Section 2.4 step 4: a line range also holds for a number component", async
   );
 });
 
-test("Section 2.4: (preamble) with a line range is still the preamble", async () => {
+test("specs/markdown-tool.md#section-addresses: (preamble) with a line range is still the preamble", async () => {
   const text = ["intro", "", "# A", "", "text", ""].join("\n");
   assert.match((await read(text, "9-9 (preamble)")).text, /· \(preamble\) · lines 1-1 ·/);
 });
 
-test("Section 2.4: outline takes a line range too", async () => {
+test("specs/markdown-tool.md#section-addresses: outline takes a line range too", async () => {
   const dir = tempDir();
   try {
     const name = write(dir, "a.md", RANGED);

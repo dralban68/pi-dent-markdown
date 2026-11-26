@@ -1,10 +1,10 @@
 /**
  * The pure part of the `Markdown` tool (specs/markdown-tool.md): the call's
- * validation (Section 1.3), the `outline` (Section 3) and `read` (Section 4)
- * results, `links` (Section 6), and the job a worker thread runs for them and
- * for `edit` (Section 5). Nothing here imports the host: the worker of `lib/markdown-worker.ts`
+ * validation (specs/markdown-tool.md#validation), the `outline` (specs/markdown-tool.md#action-outline) and `read` (specs/markdown-tool.md#action-read)
+ * results, `links` (specs/markdown-tool.md#action-links), and the job a worker thread runs for them and
+ * for `edit` (specs/markdown-tool.md#action-edit). Nothing here imports the host: the worker of `lib/markdown-worker.ts`
  * loads this module alone, so every parse runs off the host's main thread
- * (Section 2.2).
+ * (specs/markdown-tool.md#parsing).
  */
 
 import { flattenText } from "./text.ts";
@@ -34,13 +34,13 @@ import {
   type OperationPosition,
 } from "./markdown-edit.ts";
 
-/** The tool name (Section 1). */
+/** The tool name (specs/markdown-tool.md#registration). */
 export const MARKDOWN_TOOL_NAME = "Markdown";
 
-/** The `action` values (Section 1.1). */
+/** The `action` values (specs/markdown-tool.md#parameters). */
 export const MARKDOWN_ACTIONS = ["outline", "read", "edit", "links"] as const;
 
-/** The `op` values (Section 1.1). */
+/** The `op` values (specs/markdown-tool.md#parameters). */
 export const MARKDOWN_OPERATIONS: readonly OperationName[] = [
   "replace",
   "replace_body",
@@ -51,7 +51,7 @@ export const MARKDOWN_OPERATIONS: readonly OperationName[] = [
   "set_level",
 ];
 
-/** The `position` values (Section 1.1). */
+/** The `position` values (specs/markdown-tool.md#parameters). */
 export const MARKDOWN_POSITIONS: readonly OperationPosition[] = [
   "before",
   "after",
@@ -59,29 +59,29 @@ export const MARKDOWN_POSITIONS: readonly OperationPosition[] = [
   "last",
 ];
 
-/** The outline limit's default (Section 1.1). */
+/** The outline limit's default (specs/markdown-tool.md#parameters). */
 const OUTLINE_LIMIT = 100;
 
-/** The read limit's default (Section 1.1). */
+/** The read limit's default (specs/markdown-tool.md#parameters). */
 const READ_LIMIT = 500;
 
-/** The longest preview line's text, in characters (Section 3). */
+/** The longest preview line's text, in characters (specs/markdown-tool.md#action-outline). */
 const PREVIEW_LENGTH = 100;
 
-/** The most characters a `read` returns (Section 4). */
+/** The most characters a `read` returns (specs/markdown-tool.md#action-read). */
 const READ_CHARACTERS = 50000;
 
-/** The most lines a `read` returns (Section 4). */
+/** The most lines a `read` returns (specs/markdown-tool.md#action-read). */
 const READ_LINES = 2000;
 
-/** The most entries an outline lists (Section 1.1). */
+/** The most entries an outline lists (specs/markdown-tool.md#parameters). */
 const OUTLINE_ENTRIES = 500;
 
 // ---------------------------------------------------------------------------
-// Section 1.3: validation
+// specs/markdown-tool.md#validation: validation
 // ---------------------------------------------------------------------------
 
-/** The parameter fields in the table order of Section 1.1, `action` and `path` excluded. */
+/** The parameter fields in the table order of specs/markdown-tool.md#parameters, `action` and `path` excluded. */
 const FIELD_ORDER = [
   "section",
   "depth",
@@ -92,10 +92,10 @@ const FIELD_ORDER = [
   "operations",
 ] as const;
 
-/** The operation fields in the table order of Section 1.1, `op` excluded. */
+/** The operation fields in the table order of specs/markdown-tool.md#parameters, `op` excluded. */
 const OP_FIELD_ORDER = ["section", "position", "at", "content", "heading", "level"] as const;
 
-/** The fields each action accepts (Section 1.1). */
+/** The fields each action accepts (specs/markdown-tool.md#parameters). */
 const ACCEPTED: Readonly<Record<string, ReadonlySet<string>>> = {
   outline: new Set(["section", "depth", "preview", "offset", "limit"]),
   read: new Set(["section", "depth", "offset", "limit"]),
@@ -103,7 +103,7 @@ const ACCEPTED: Readonly<Record<string, ReadonlySet<string>>> = {
   edit: new Set(["revision", "operations"]),
 };
 
-/** The fields each op accepts (Section 1.1); every one of them is required. */
+/** The fields each op accepts (specs/markdown-tool.md#parameters); every one of them is required. */
 const OP_ACCEPTED: Readonly<Record<string, readonly string[]>> = {
   replace: ["section", "content"],
   replace_body: ["section", "content"],
@@ -114,7 +114,7 @@ const OP_ACCEPTED: Readonly<Record<string, readonly string[]>> = {
   set_level: ["section", "level"],
 };
 
-/** A field value that counts as present: neither absent nor `null` (Section 1.1). */
+/** A field value that counts as present: neither absent nor `null` (specs/markdown-tool.md#parameters). */
 function present(fields: Record<string, unknown>, name: string): unknown {
   const value = fields[name];
   return value === undefined || value === null ? undefined : value;
@@ -125,13 +125,13 @@ function trimmedText(value: unknown): string | undefined {
   return typeof value === "string" ? value.trim() : undefined;
 }
 
-/** True when `value` is a number for which `Number.isInteger` holds, between the bounds (Section 1.1). */
+/** True when `value` is a number for which `Number.isInteger` holds, between the bounds (specs/markdown-tool.md#parameters). */
 function isIntegerBetween(value: unknown, low: number, high: number): value is number {
   if (typeof value !== "number" || !Number.isInteger(value)) return false;
   return value >= low && value <= high;
 }
 
-/** True when a present value is `(document)` or `(preamble)` (Section 1.3). */
+/** True when a present value is `(document)` or `(preamble)` (specs/markdown-tool.md#validation). */
 function isNamed(value: string | undefined, name: string): boolean {
   return value !== undefined && stripAddress(value) === name;
 }
@@ -160,7 +160,7 @@ function positionOf(value: unknown): OperationPosition | undefined {
   return;
 }
 
-/** The content block of a `content` value: its lines without leading and trailing blank lines (Section 5.2). */
+/** The content block of a `content` value: its lines without leading and trailing blank lines (specs/markdown-tool.md#edit-line-rules). */
 export function contentBlockOf(content: string): ContentBlock {
   const raw = splitLines(content).map((line) => line.text);
   let start = 0;
@@ -178,7 +178,7 @@ export function contentBlockOf(content: string): ContentBlock {
   return { lines: raw.slice(start, end), offset: start };
 }
 
-/** A line of a content block is a marker a `read` result left, not file text (Section 1.3, check 22). */
+/** A line of a content block is a marker a `read` result left, not file text (specs/markdown-tool.md#validation, check 22). */
 const READ_MARKERS: readonly RegExp[] = [
   /^\[\u2026 [0-9]+ lines hidden: [0-9]+-[0-9]+\]$/,
   /^--- cut: continue with offset [0-9]+ ---$/,
@@ -186,7 +186,7 @@ const READ_MARKERS: readonly RegExp[] = [
   / · lines [0-9]+-[0-9]+ · revision [0-9a-f]{8}$/,
 ];
 
-/** The line of a content block that is a marker of a `read` result, or undefined (Section 1.3, check 22). */
+/** The line of a content block that is a marker of a `read` result, or undefined (specs/markdown-tool.md#validation, check 22). */
 function markerLine(block: ContentBlock): number | undefined {
   for (let index = 0; index < block.lines.length; index += 1) {
     const line = block.lines[index];
@@ -200,7 +200,7 @@ function markerLine(block: ContentBlock): number | undefined {
   return;
 }
 
-/** The validated shape of one operation, or the error text of the first failing check (Section 1.3). */
+/** The validated shape of one operation, or the error text of the first failing check (specs/markdown-tool.md#validation). */
 function checkOperation(value: unknown, index: number): Operation | { error: string } {
   const prefix = `operations[${index}]: `;
   const fields: Record<string, unknown> = isPlainObject(value) ? value : {};
@@ -308,7 +308,7 @@ function checkOperation(value: unknown, index: number): Operation | { error: str
   };
 }
 
-/** A validated call, or the error text of the first failing check (Section 1.3). */
+/** A validated call, or the error text of the first failing check (specs/markdown-tool.md#validation). */
 export type ValidatedCall =
   | { kind: "error"; message: string }
   | {
@@ -332,7 +332,7 @@ export type ValidatedCall =
   | { kind: "edit"; path: string; revision: string; operations: Operation[] };
 
 /**
- * The checks of Section 1.3, in their order, the first failure reported: the
+ * The checks of specs/markdown-tool.md#validation, in their order, the first failure reported: the
  * call's fields first, then each operation's.
  */
 export function checkMarkdownCall(params: unknown): ValidatedCall {
@@ -461,10 +461,10 @@ export function checkMarkdownCall(params: unknown): ValidatedCall {
 }
 
 // ---------------------------------------------------------------------------
-// Sections 3 and 4: results
+// #action-outline, #action-read: results
 // ---------------------------------------------------------------------------
 
-export /** The result of an `outline` call (Section 3). */
+export /** The result of an `outline` call (specs/markdown-tool.md#action-outline). */
 function outlineResult(
   loaded: LoadedText,
   validated: {
@@ -489,7 +489,7 @@ function outlineResult(
     addressed = resolved.index;
     candidates = [resolved.index, ...descendantsOf(model, resolved.index)];
   }
-  // The default depth fits the greater of `limit` and 100 entries (Section 3).
+  // The default depth fits the greater of `limit` and 100 entries (specs/markdown-tool.md#action-outline).
   const depth = validated.depth ?? defaultDepth(model, candidates, Math.max(validated.limit, 100));
   const entries: number[] = [];
   for (const index of candidates) {
@@ -566,7 +566,7 @@ function outlineResult(
   return { text: lines.join("\n"), details, isError: false };
 }
 
-export /** The result of a `read` call (Section 4). */
+export /** The result of a `read` call (specs/markdown-tool.md#action-read). */
 function readResult(
   loaded: LoadedText,
   validated: {
@@ -663,7 +663,7 @@ function readResult(
   return { text: parts.join("\n"), details, isError: false };
 }
 
-/** The inventory and paging of Section 6. */
+/** The inventory and paging of specs/markdown-tool.md#action-links. */
 function linksResult(
   loaded: LoadedText,
   validated: Extract<ValidatedCall, { kind: "links" }>,
@@ -730,10 +730,10 @@ function linksResult(
 }
 
 // ---------------------------------------------------------------------------
-// Sections 3 and 4: shared computation
+// #action-outline, #action-read: shared computation
 // ---------------------------------------------------------------------------
 
-/** A section a read or outline address names, or the error text (Section 2.4). */
+/** A section a read or outline address names, or the error text (specs/markdown-tool.md#section-addresses). */
 function resolveForRead(
   model: DocModel,
   value: string,
@@ -744,7 +744,7 @@ function resolveForRead(
   return { index: resolved.index };
 }
 
-/** The descendants of a section, in document order (Section 2.3). */
+/** The descendants of a section, in document order (specs/markdown-tool.md#sections). */
 function descendantsOf(model: DocModel, index: number): number[] {
   const found: number[] = [];
   for (const section of model.sections) {
@@ -755,7 +755,7 @@ function descendantsOf(model: DocModel, index: number): number[] {
   return found;
 }
 
-/** The number of a section's descendants that are not among `entries` (Section 3). */
+/** The number of a section's descendants that are not among `entries` (specs/markdown-tool.md#action-outline). */
 function countHidden(model: DocModel, index: number, entries: ReadonlySet<number>): number {
   let hidden = 0;
   for (const section of model.sections) {
@@ -767,7 +767,7 @@ function countHidden(model: DocModel, index: number, entries: ReadonlySet<number
   return hidden;
 }
 
-/** The default `<d>` of an outline (Section 3). */
+/** The default `<d>` of an outline (specs/markdown-tool.md#action-outline). */
 function defaultDepth(model: DocModel, candidates: readonly number[], limit: number): number {
   if (candidates.length === 0) return 6;
   const levels: number[] = [];
@@ -789,7 +789,7 @@ function defaultDepth(model: DocModel, candidates: readonly number[], limit: num
   return depth ?? levels[0] ?? 6;
 }
 
-/** The preview line of a section: the first line of its own body, flattened and cut (Section 3). */
+/** The preview line of a section: the first line of its own body, flattened and cut (specs/markdown-tool.md#action-outline). */
 function previewOf(lines: readonly TextLine[], section: DocSection): string | undefined {
   if (section.bodyStart === undefined) return;
   const line = lines[section.bodyStart - 1];
@@ -800,14 +800,14 @@ function previewOf(lines: readonly TextLine[], section: DocSection): string | un
     : flattened;
 }
 
-/** A display line of a read result: the file lines it covers, and its text (Section 4). */
+/** A display line of a read result: the file lines it covers, and its text (specs/markdown-tool.md#action-read). */
 interface DisplayLine {
   first: number;
   last: number;
   text: string;
 }
 
-/** The display lines of a read range, collapsing the sections deeper than `depth` (Section 4). */
+/** The display lines of a read range, collapsing the sections deeper than `depth` (specs/markdown-tool.md#action-read). */
 function displayLines(
   model: DocModel,
   lines: readonly TextLine[],
@@ -868,16 +868,16 @@ function displayLines(
 }
 
 // ---------------------------------------------------------------------------
-// The jobs a worker runs (Section 2.2)
+// The jobs a worker runs (specs/markdown-tool.md#parsing)
 // ---------------------------------------------------------------------------
 
-/** A file's lines and revision, as the result functions read them (Section 2.1). */
+/** A file's lines and revision, as the result functions read them (specs/markdown-tool.md#file-access). */
 export interface LoadedText {
   lines: TextLine[];
   revision: string;
 }
 
-/** The text and details of a result, and for an `edit` that changed the file, the bytes to write (Section 5.1). */
+/** The text and details of a result, and for an `edit` that changed the file, the bytes to write (specs/markdown-tool.md#edit-applying). */
 export interface MarkdownReply {
   text: string;
   details: Record<string, unknown>;
@@ -885,27 +885,27 @@ export interface MarkdownReply {
   bytes?: Uint8Array;
 }
 
-/** A tool error with no details (Section 1). */
+/** A tool error with no details (specs/markdown-tool.md#registration). */
 export function failure(message: string): MarkdownReply {
   return { text: message, details: {}, isError: true };
 }
 
-/** One job of a call, as the worker runs it (Section 2.2). */
+/** One job of a call, as the worker runs it (specs/markdown-tool.md#parsing). */
 export interface MarkdownJob {
-  /** `check` validates the call (Section 1.3); the others run it on the file's text. */
+  /** `check` validates the call (specs/markdown-tool.md#validation); the others run it on the file's text. */
   kind: "check" | "outline" | "read" | "edit" | "links";
   params: unknown;
-  /** The file's text without a leading U+FEFF, its revision, and whether it had one (Section 2.1). */
+  /** The file's text without a leading U+FEFF, its revision, and whether it had one (specs/markdown-tool.md#file-access). */
   text: string;
   revision: string;
   hadBom: boolean;
-  /** The trimmed `path` as given, and the absolute path the call resolved (Section 2.1). */
+  /** The trimmed `path` as given, and the absolute path the call resolved (specs/markdown-tool.md#file-access). */
   display: string;
   absolute: string;
 }
 
 /**
- * Run a job (Sections 1.3 to 6): the check of a call's fields and operations,
+ * Run a job (#validation, #documents, #action-outline, #action-read, #action-edit, #action-links): the check of a call's fields and operations,
  * then its action on the text. The result is the reply the caller turns into a
  * tool result, and for `edit` the bytes the caller writes.
  */
@@ -936,7 +936,7 @@ export function runMarkdownJob(job: MarkdownJob): MarkdownReply {
   return failure("Markdown cannot run this call");
 }
 
-/** The result of an `edit` call whose file and revision check out (Section 5.5). */
+/** The result of an `edit` call whose file and revision check out (specs/markdown-tool.md#edit-result). */
 function editJob(
   job: MarkdownJob,
   loaded: LoadedText,

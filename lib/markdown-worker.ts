@@ -1,5 +1,5 @@
 /**
- * The worker thread of the `Markdown` tool (specs/markdown-tool.md, Section 2.2):
+ * The worker thread of the `Markdown` tool (specs/markdown-tool.md, specs/markdown-tool.md#parsing):
  * it runs one job of a call at a time, charging its parses to the call's parse
  * clock, and posts back the reply or why there is none. `lib/markdown-tool.ts`
  * creates the thread for a call and terminates it when the call ends, on its

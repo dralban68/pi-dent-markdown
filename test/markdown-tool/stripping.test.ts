@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { bytesOf, call, cleanupRoots, revisionOf, runtime, tempDir, write } from "./support.ts";
 
 /**
- * specs/markdown-tool.md Section 2.4 through the tool: the stripping of an
+ * specs/markdown-tool.md specs/markdown-tool.md#section-addresses through the tool: the stripping of an
  * address (a leading `* `, a leading line range, leading heading marks, and a
  * trailing ` (+<k> hidden)`), the number components of matching step 4, the
  * precedence of a literal heading, and the collision rejection of an address
@@ -42,7 +42,7 @@ async function edit(
   }
 }
 
-test("Section 2.4: a leading `* ` is stripped from an address", async () => {
+test("specs/markdown-tool.md#section-addresses: a leading `* ` is stripped from an address", async () => {
   const outcome = await read(NESTED, "* One A");
   assert.equal(outcome.isError, false);
   assert.equal(outcome.address, "Doc > One > One A");
@@ -50,13 +50,13 @@ test("Section 2.4: a leading `* ` is stripped from an address", async () => {
   assert.equal(bare.address, "Doc > One > One A");
 });
 
-test("Section 2.4 step 2: a `*` attached to a component is removed by normalization, not stripped", async () => {
+test("specs/markdown-tool.md#section-addresses step 2: a `*` attached to a component is removed by normalization, not stripped", async () => {
   const attached = await read(NESTED, "*One A");
   assert.equal(attached.isError, false);
   assert.equal(attached.address, "Doc > One > One A");
 });
 
-test("Section 2.4: a leading line range `<a>-<b> ` is stripped, as a copied outline line gives it", async () => {
+test("specs/markdown-tool.md#section-addresses: a leading line range `<a>-<b> ` is stripped, as a copied outline line gives it", async () => {
   const range = await read(NESTED, "5-7 One A");
   assert.equal(range.isError, false);
   assert.equal(range.address, "Doc > One > One A");
@@ -67,7 +67,7 @@ test("Section 2.4: a leading line range `<a>-<b> ` is stripped, as a copied outl
   assert.equal(copied.address, "Doc > One");
 });
 
-test("Section 2.4: leading heading marks `#{1,6} ` are stripped, and only once", async () => {
+test("specs/markdown-tool.md#section-addresses: leading heading marks `#{1,6} ` are stripped, and only once", async () => {
   const marks = await read(NESTED, "### One A");
   assert.equal(marks.isError, false);
   assert.equal(marks.address, "Doc > One > One A");
@@ -76,25 +76,25 @@ test("Section 2.4: leading heading marks `#{1,6} ` are stripped, and only once",
   assert.equal(doubled.text, 'no section "## ## One A" in a.md. Run outline to list its sections.');
 });
 
-test("Section 2.4: a trailing ` (+<k> hidden)` is stripped from an address", async () => {
+test("specs/markdown-tool.md#section-addresses: a trailing ` (+<k> hidden)` is stripped from an address", async () => {
   const outcome = await read(NESTED, "One (+2 hidden)");
   assert.equal(outcome.isError, false);
   assert.equal(outcome.address, "Doc > One");
 });
 
-test("Section 2.4: the stripping runs in order, after the trim, on the whole value", async () => {
+test("specs/markdown-tool.md#section-addresses: the stripping runs in order, after the trim, on the whole value", async () => {
   const padded = await read(NESTED, "   * 5-7 ### One A (+0 hidden)  ");
   assert.equal(padded.isError, false);
   assert.equal(padded.address, "Doc > One > One A");
 });
 
-test("Section 2.4: an address that is not found is shown trimmed, as given", async () => {
+test("specs/markdown-tool.md#section-addresses: an address that is not found is shown trimmed, as given", async () => {
   const outcome = await read(NESTED, "  ## Missing  ");
   assert.equal(outcome.isError, true);
   assert.equal(outcome.text, 'no section "## Missing" in a.md. Run outline to list its sections.');
 });
 
-test("Section 2.4: (preamble) is recognised after stripping of `* ` and the line range, not of heading marks", async () => {
+test("specs/markdown-tool.md#section-addresses: (preamble) is recognised after stripping of `* ` and the line range, not of heading marks", async () => {
   const text = ["intro", "", "# A", "", "text", ""].join("\n");
   const copied = await read(text, "1-1 (preamble)");
   assert.equal(copied.isError, false);
@@ -111,7 +111,7 @@ test("Section 2.4: (preamble) is recognised after stripping of `* ` and the line
   assert.equal(hidden.isError, false);
 });
 
-test("Section 2.4: (document) is refused when stripped, but not behind heading marks", async () => {
+test("specs/markdown-tool.md#section-addresses: (document) is refused when stripped, but not behind heading marks", async () => {
   const outcome = await read(NESTED, "(document)");
   assert.equal(outcome.isError, true);
   assert.equal(outcome.text, "(document) is not valid as the section of read");
@@ -120,7 +120,7 @@ test("Section 2.4: (document) is refused when stripped, but not behind heading m
   assert.equal(marked.text, 'no section "# (document)" in a.md. Run outline to list its sections.');
 });
 
-test("Section 2.4: a heading text that starts with a line range is named by its text after the range", async () => {
+test("specs/markdown-tool.md#section-addresses: a heading text that starts with a line range is named by its text after the range", async () => {
   const text = ["# Doc", "", "## 2024-2025 Roadmap", "", "text", ""].join("\n");
   const outcome = await read(text, "2024-2025 Roadmap");
   assert.equal(outcome.isError, true);
@@ -144,7 +144,7 @@ const SPEC = [
   "",
 ].join("\n");
 
-test("Section 2.4 step 4: a number component names a section by its number, in every form", async () => {
+test("specs/markdown-tool.md#section-addresses step 4: a number component names a section by its number, in every form", async () => {
   const cases: [string, string][] = [
     ["3.1", "Spec > 3. Find > 3.1 Candidates"],
     ["3.1 Candidates", "Spec > 3. Find > 3.1 Candidates"],
@@ -163,13 +163,13 @@ test("Section 2.4 step 4: a number component names a section by its number, in e
   }
 });
 
-test("Section 2.4 step 4: a number component matches only a heading whose number is the same", async () => {
+test("specs/markdown-tool.md#section-addresses step 4: a number component matches only a heading whose number is the same", async () => {
   const outcome = await read(SPEC, "3.2");
   assert.equal(outcome.isError, true);
   assert.equal(outcome.text, 'no section "3.2" in a.md. Run outline to list its sections.');
 });
 
-test("Section 2.4 step 4: a number that several sections share is ambiguous", async () => {
+test("specs/markdown-tool.md#section-addresses step 4: a number that several sections share is ambiguous", async () => {
   const text = [
     "# Spec",
     "",
@@ -197,7 +197,7 @@ test("Section 2.4 step 4: a number that several sections share is ambiguous", as
   assert.equal(narrowed.address, "Spec > 2. B > 3.1 Y");
 });
 
-test("Section 2.4: a literal heading `2024` is matched at step 1, before a number match", async () => {
+test("specs/markdown-tool.md#section-addresses: a literal heading `2024` is matched at step 1, before a number match", async () => {
   const text = ["# Doc", "", "## 2024", "", "text A", "", "## 2024 Roadmap", "", "text B", ""].join(
     "\n",
   );
@@ -211,7 +211,7 @@ test("Section 2.4: a literal heading `2024` is matched at step 1, before a numbe
   assert.equal(number.address, "Doc > 2024 Roadmap");
 });
 
-test("Section 2.4: an address naming a section renumbered by an earlier operation is refused when another heading before the call had its number", async () => {
+test("specs/markdown-tool.md#section-addresses: an address naming a section renumbered by an earlier operation is refused when another heading before the call had its number", async () => {
   const text = [
     "# Spec",
     "",
@@ -248,7 +248,7 @@ test("Section 2.4: an address naming a section renumbered by an earlier operatio
   assert.equal(outcome.file, text);
 });
 
-test("Section 2.4: an address naming a renumbered section by its text is refused when another heading before the call had that text", async () => {
+test("specs/markdown-tool.md#section-addresses: an address naming a renumbered section by its text is refused when another heading before the call had that text", async () => {
   const text = [
     "# Spec",
     "",
@@ -284,7 +284,7 @@ test("Section 2.4: an address naming a renumbered section by its text is refused
   );
 });
 
-test("Section 2.4: a renumbered section is named by its number when no heading before the call had that number", async () => {
+test("specs/markdown-tool.md#section-addresses: a renumbered section is named by its number when no heading before the call had that number", async () => {
   const text = ["# Spec", "", "## 3. Find", "", "text", "", "## 4. Get", "", "text", ""].join("\n");
   const outcome = await edit(text, [
     { op: "move", section: "4. Get", position: "last", at: "3. Find" },
@@ -298,7 +298,7 @@ const MARKS = ["# Alpha", "", "## Dup", "", "one", "", "# Beta", "", "## Dup", "
   "\n",
 );
 
-test("Section 2.4: heading marks are stripped from each component of an address, once each", async () => {
+test("specs/markdown-tool.md#section-addresses: heading marks are stripped from each component of an address, once each", async () => {
   const first = await read(MARKS, "# Alpha > ## Dup");
   assert.equal(first.isError, false);
   assert.equal(first.address, "Alpha > Dup");
@@ -315,7 +315,7 @@ test("Section 2.4: heading marks are stripped from each component of an address,
   );
 });
 
-test("Section 2.4: a bare duplicate name is ambiguous, and a line range picks one of them", async () => {
+test("specs/markdown-tool.md#section-addresses: a bare duplicate name is ambiguous, and a line range picks one of them", async () => {
   const bare = await read(MARKS, "Dup");
   assert.equal(bare.isError, true);
   assert.equal(

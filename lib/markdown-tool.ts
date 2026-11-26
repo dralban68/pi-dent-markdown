@@ -1,9 +1,9 @@
 /**
  * The `Markdown` tool (specs/markdown-tool.md): the registration surface
- * (Section 1), the file access (Section 2.1), and the call's ends (Sections 3
+ * (specs/markdown-tool.md#registration), the file access (specs/markdown-tool.md#file-access), and the call's ends (specs/markdown-tool.md#action-outline
  * to 6 and 7). The checks, the results, and the structural edits are the pure
  * modules `lib/markdown-run.ts` and `lib/markdown-edit.ts`; the parses run on a
- * worker thread (`lib/markdown-worker.ts`, Section 2.2), created per call.
+ * worker thread (`lib/markdown-worker.ts`, specs/markdown-tool.md#parsing), created per call.
  *
  * Everything host-specific — the working directory, the file system, and the
  * host's file mutation queue — is a parameter, so every rule is testable
@@ -50,18 +50,18 @@ export {
 export type ToolResult = AgentToolResult<Record<string, unknown>>;
 
 // ---------------------------------------------------------------------------
-// Section 1.4: model-facing texts, verbatim
+// specs/markdown-tool.md#model-facing-texts: model-facing texts, verbatim
 // ---------------------------------------------------------------------------
 
-/** The tool's `description` (Section 1.4). */
+/** The tool's `description` (specs/markdown-tool.md#model-facing-texts). */
 export const MARKDOWN_DESCRIPTION =
   'Outline, read, and restructure a Markdown file by its headings; use it instead of the `read` tool for Markdown files. For a long file, outline first and read only the sections you need. Its outline action lists the sections with their line ranges; read returns one section; links lists the links, images, autolinks, and link definitions of the file or a section with their lines and destinations, plus unused definitions and references to missing ones, for you to check, and checks no target itself; edit replaces, inserts, deletes, moves, renames, or re-levels whole sections without quoting their old text, fits each placed section to the level of its new place, and applies its operations in order, all or none. Name a section by its heading text, its number ("3.1", "§3.1"), or a line copied from an outline or edit result; when that is not unique, put ancestor headings before it, joined by " > ". Numbered headings ("3.", "3.1") are renumbered to stay in sequence, and a section placed among them without a number gets one; a later operation of the same call names a renumbered section by its text without the number. To change words inside a section, use the `edit` tool.';
 
-/** The tool's `promptSnippet` (Section 1.4). */
+/** The tool's `promptSnippet` (specs/markdown-tool.md#model-facing-texts). */
 export const MARKDOWN_PROMPT_SNIPPET =
   "Outline, read, and edit Markdown files section by section: the default for reading and restructuring Markdown";
 
-/** The `description` of each parameter, verbatim from Section 1.4. */
+/** The `description` of each parameter, verbatim from specs/markdown-tool.md#model-facing-texts. */
 export const MARKDOWN_PARAMETER_DESCRIPTIONS = {
   action:
     "outline: list the sections with their line ranges. read: return one section's text. edit: apply structural operations. links: list the links and their destinations.",
@@ -94,12 +94,12 @@ export const MARKDOWN_PARAMETER_DESCRIPTIONS = {
 const DESCRIPTIONS = MARKDOWN_PARAMETER_DESCRIPTIONS;
 
 // ---------------------------------------------------------------------------
-// Section 1.1: parameter schema
+// specs/markdown-tool.md#parameters: parameter schema
 // ---------------------------------------------------------------------------
 
 /**
  * The schema of one operation. Its properties carry the descriptions of
- * Section 1.4; the element schema and the alternatives inside a property carry
+ * specs/markdown-tool.md#model-facing-texts; the element schema and the alternatives inside a property carry
  * none.
  */
 export const markdownOperationSchema = Type.Object(
@@ -128,7 +128,7 @@ export const markdownOperationSchema = Type.Object(
 );
 
 /**
- * The parameter schema of Section 1.1: an object with `action` and `path`
+ * The parameter schema of specs/markdown-tool.md#parameters: an object with `action` and `path`
  * required, every other field optional and admitting `null`, and no property
  * beyond the table's.
  */
@@ -165,11 +165,11 @@ export const markdownParameterSchema: TSchema = Type.Object(
 );
 
 // ---------------------------------------------------------------------------
-// Section 1.2: argument preparation
+// specs/markdown-tool.md#argument-preparation: argument preparation
 // ---------------------------------------------------------------------------
 
 /**
- * Prepare a call's arguments before the host validates them (Section 1.2):
+ * Prepare a call's arguments before the host validates them (specs/markdown-tool.md#argument-preparation):
  * `operations` sent as a JSON string or as a lone object becomes the array it
  * stands for; every other argument is left as it is.
  */
@@ -192,10 +192,10 @@ export function prepareMarkdownArguments(args: unknown): unknown {
 }
 
 // ---------------------------------------------------------------------------
-// Section 2.1: file access
+// specs/markdown-tool.md#file-access: file access
 // ---------------------------------------------------------------------------
 
-/** The absolute path a call's `path` names (Section 2.1). */
+/** The absolute path a call's `path` names (specs/markdown-tool.md#file-access). */
 export function resolveMarkdownPath(display: string, cwd: string, home: string): string {
   let text = display.trim();
   if (text.startsWith("@")) text = text.slice(1);
@@ -204,7 +204,7 @@ export function resolveMarkdownPath(display: string, cwd: string, home: string):
   return resolve(cwd, text);
 }
 
-/** A file as the call read it (Section 2.1). */
+/** A file as the call read it (specs/markdown-tool.md#file-access). */
 export interface LoadedFile {
   bytes: Uint8Array;
   text: string;
@@ -212,7 +212,7 @@ export interface LoadedFile {
   revision: string;
 }
 
-/** The error text of a file the call cannot use (Section 2.1). */
+/** The error text of a file the call cannot use (specs/markdown-tool.md#file-access). */
 export interface LoadFailure {
   error: string;
 }
@@ -227,14 +227,14 @@ export interface MarkdownRuntimeOptions {
   writeFile?: (path: string, bytes: Uint8Array) => void;
   /** The host's per-file serialization. Default the host's `withFileMutationQueue`. */
   mutationQueue?: <T>(path: string, body: () => Promise<T>) => Promise<T>;
-  /** The parse time one call may spend, in milliseconds (Section 2.2). Default 10000. */
+  /** The parse time one call may spend, in milliseconds (specs/markdown-tool.md#parsing). Default 10000. */
   parseBudgetMs?: number;
 }
 
 /** One call of the tool. */
 export interface MarkdownInvocation {
   params: unknown;
-  /** The working directory of the invoking session (Section 2.1). */
+  /** The working directory of the invoking session (specs/markdown-tool.md#file-access). */
   cwd: string;
   signal: AbortSignal | undefined;
 }
@@ -244,14 +244,14 @@ export interface MarkdownRuntime {
   execute(invocation: MarkdownInvocation): Promise<ToolResult>;
 }
 
-/** How a worker's job ended: its reply, or why it ended without one (Section 2.2). */
+/** How a worker's job ended: its reply, or why it ended without one (specs/markdown-tool.md#parsing). */
 type JobEnd =
   | { kind: "reply"; reply: MarkdownReply }
   | { kind: "budget" }
   | { kind: "aborted" }
   | { kind: "failed"; message: string };
 
-/** A reply the worker posted, checked as a reply (Section 2.2). */
+/** A reply the worker posted, checked as a reply (specs/markdown-tool.md#parsing). */
 function replyOf(value: unknown): MarkdownReply | undefined {
   if (!isPlainObject(value)) return;
   const { text, details, isError, bytes } = value;
@@ -265,7 +265,7 @@ function replyOf(value: unknown): MarkdownReply | undefined {
 }
 
 /**
- * The worker thread of one call (Section 2.2): the parses run there, off the
+ * The worker thread of one call (specs/markdown-tool.md#parsing): the parses run there, off the
  * host's main thread, and the call's parse time is kept across its jobs. A job
  * ends by its reply, by the parse budget, by the call's abort, or by a failure;
  * the last three end the thread too, which is how a parse stops.
@@ -305,7 +305,7 @@ class CallWorker {
     });
   }
 
-  /** The text a job's end gives the call (Sections 1.3 and 2.2). */
+  /** The text a job's end gives the call (#validation, #parsing). */
   reply(end: JobEnd, display: string): MarkdownReply {
     if (end.kind === "reply") return end.reply;
     if (end.kind === "aborted") return failure("Markdown aborted");
@@ -368,12 +368,12 @@ class CallWorker {
   }
 }
 
-/** A job with no file: the check of a call's fields and operations (Section 1.3). */
+/** A job with no file: the check of a call's fields and operations (specs/markdown-tool.md#validation). */
 function blankJob(kind: MarkdownJob["kind"], params: unknown): MarkdownJob {
   return { kind, params, text: "", revision: "", hadBom: false, display: "", absolute: "" };
 }
 
-/** A job that runs a call on a file the call has read (Sections 3 to 5). */
+/** A job that runs a call on a file the call has read (#action-outline, #action-read, #action-edit). */
 function fileJob(
   kind: MarkdownJob["kind"],
   params: unknown,
@@ -392,13 +392,13 @@ function fileJob(
   };
 }
 
-/** The path a call names, trimmed as given (Section 2.1), for error texts before the check. */
+/** The path a call names, trimmed as given (specs/markdown-tool.md#file-access), for error texts before the check. */
 function pathOf(params: unknown): string {
   if (!isPlainObject(params) || typeof params.path !== "string") return "";
   return params.path.trim();
 }
 
-/** A reply as the tool's result (Section 1). */
+/** A reply as the tool's result (specs/markdown-tool.md#registration). */
 function toolResult(reply: MarkdownReply): ToolResult {
   const content: ToolResult["content"] = [{ type: "text", text: reply.text }];
   return reply.isError
@@ -406,12 +406,12 @@ function toolResult(reply: MarkdownReply): ToolResult {
     : { content, details: reply.details };
 }
 
-/** A file read as Section 2.1 bounds it: its bytes, or why the call does not read them. */
+/** A file read as specs/markdown-tool.md#file-access bounds it: its bytes, or why the call does not read them. */
 type ReadOutcome = { bytes: Uint8Array } | { size: number } | { notRegular: true };
 
 /**
  * Read a file without blocking the main thread or reading more than one byte past the
- * size limit (Section 2.1). `O_NONBLOCK` keeps opening a FIFO from waiting for a writer.
+ * size limit (specs/markdown-tool.md#file-access). `O_NONBLOCK` keeps opening a FIFO from waiting for a writer.
  */
 async function readBounded(path: string): Promise<ReadOutcome> {
   const handle = await open(path, constants.O_RDONLY | (constants.O_NONBLOCK ?? 0));
@@ -452,7 +452,7 @@ export function markdownRuntime(options: MarkdownRuntimeOptions = {}): MarkdownR
     options.mutationQueue ??
     (<T>(path: string, body: () => Promise<T>) => withFileMutationQueue(path, body));
 
-  /** Read a file and check it is a Markdown text the tool reads (Section 2.1). */
+  /** Read a file and check it is a Markdown text the tool reads (specs/markdown-tool.md#file-access). */
   async function load(absolute: string, display: string): Promise<LoadedFile | LoadFailure> {
     let outcome: ReadOutcome;
     try {
@@ -488,7 +488,7 @@ export function markdownRuntime(options: MarkdownRuntimeOptions = {}): MarkdownR
     }
   }
 
-  /** The flow of a call on its worker: the check, the file, then the action (Sections 1.3 and 2.1). */
+  /** The flow of a call on its worker: the check, the file, then the action (#validation, #file-access). */
   async function executeOn(
     worker: CallWorker,
     invocation: MarkdownInvocation,
@@ -551,10 +551,10 @@ export function markdownRuntime(options: MarkdownRuntimeOptions = {}): MarkdownR
 }
 
 // ---------------------------------------------------------------------------
-// Section 7: rendering, and the registration of Section 1
+// specs/markdown-tool.md#rendering: rendering, and the registration of specs/markdown-tool.md#registration
 // ---------------------------------------------------------------------------
 
-/** The lines `renderCall` shows for a call (Section 7). */
+/** The lines `renderCall` shows for a call (specs/markdown-tool.md#rendering). */
 export function renderMarkdownCallLines(args: unknown): string[] {
   const fields: Record<string, unknown> = isPlainObject(args) ? args : {};
   const parts: string[] = ["Markdown"];
@@ -584,7 +584,7 @@ export function renderMarkdownCallLines(args: unknown): string[] {
   return lines;
 }
 
-/** The `Markdown` tool definition the host registers (Section 1). */
+/** The `Markdown` tool definition the host registers (specs/markdown-tool.md#registration). */
 export function makeMarkdownTool(runtime: MarkdownRuntime) {
   return defineTool({
     name: MARKDOWN_TOOL_NAME,

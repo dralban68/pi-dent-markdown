@@ -5,7 +5,7 @@ import { revisionOf as revisionOfBytes } from "../../lib/markdown-document.ts";
 import { markdownRuntime } from "../../lib/markdown-tool.ts";
 
 /**
- * specs/markdown-tool.md Section 2.2: the parses run off the host's main thread,
+ * specs/markdown-tool.md specs/markdown-tool.md#parsing: the parses run off the host's main thread,
  * the parses of one call are bounded by a total budget and end the call as a
  * tool error when they reach it without writing the file, and a parse running
  * when the tool-call signal aborts stops at once.
@@ -20,7 +20,7 @@ function slowText(items: number): string {
   return ["# Slow", "", ...lines, "## Last", "", "text", ""].join("\n");
 }
 
-test("Section 2.2: a call whose parses reach the budget is a tool error and writes nothing", async () => {
+test("specs/markdown-tool.md#parsing: a call whose parses reach the budget is a tool error and writes nothing", async () => {
   const dir = tempDir();
   try {
     const text = slowText(8000);
@@ -45,7 +45,7 @@ test("Section 2.2: a call whose parses reach the budget is a tool error and writ
   }
 });
 
-test("Section 2.2: a read that reaches the budget is a tool error", async () => {
+test("specs/markdown-tool.md#parsing: a read that reaches the budget is a tool error", async () => {
   const dir = tempDir();
   try {
     const name = write(dir, "slow.md", slowText(8000));
@@ -64,7 +64,7 @@ test("Section 2.2: a read that reaches the budget is a tool error", async () => 
   }
 });
 
-test("Section 2.2: the parse runs off the main thread, so the event loop turns during it", async () => {
+test("specs/markdown-tool.md#parsing: the parse runs off the main thread, so the event loop turns during it", async () => {
   const dir = tempDir();
   try {
     const name = write(dir, "slow.md", slowText(8000));
@@ -84,7 +84,7 @@ test("Section 2.2: the parse runs off the main thread, so the event loop turns d
   }
 });
 
-test("Section 2.2: a parse running when the signal aborts stops within 100 ms and the call is aborted", async () => {
+test("specs/markdown-tool.md#parsing: a parse running when the signal aborts stops within 100 ms and the call is aborted", async () => {
   const dir = tempDir();
   try {
     const name = write(dir, "slow.md", slowText(8000));
@@ -111,7 +111,7 @@ test("Section 2.2: a parse running when the signal aborts stops within 100 ms an
   }
 });
 
-test("Section 2.2: an edit aborted during its parse writes nothing", async () => {
+test("specs/markdown-tool.md#parsing: an edit aborted during its parse writes nothing", async () => {
   const dir = tempDir();
   try {
     const text = slowText(8000);

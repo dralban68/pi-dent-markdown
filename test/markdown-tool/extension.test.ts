@@ -6,8 +6,8 @@ import { MARKDOWN_DESCRIPTION } from "../../lib/markdown-tool.ts";
 import { must } from "../support/must.ts";
 
 /**
- * specs/markdown-tool.md Section 1.5: the standalone entry registers exactly one tool, the
- * `Markdown` of Section 1 — name, label, the Section 1.4 description, the schema, and the
+ * specs/markdown-tool.md specs/markdown-tool.md#standalone-entry: the standalone entry registers exactly one tool, the
+ * `Markdown` of specs/markdown-tool.md#registration — name, label, the specs/markdown-tool.md#model-facing-texts description, the schema, and the
  * argument preparation — through the host `registerTool` API. The registered call's behaviour
  * is the library's and is owned by the other suites.
  */
@@ -21,7 +21,7 @@ interface RegisteredTool {
   prepareArguments?: (args: unknown) => unknown;
 }
 
-test("Section 1.5: the entry registers exactly one Markdown tool, as Section 1's table has it", () => {
+test("specs/markdown-tool.md#standalone-entry: the entry registers exactly one Markdown tool, as specs/markdown-tool.md#registration has it", () => {
   const tools: RegisteredTool[] = [];
   const pi = {
     registerTool: (tool: RegisteredTool) => tools.push(tool),

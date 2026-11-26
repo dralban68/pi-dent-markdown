@@ -1,0 +1,13 @@
+{
+  "externalSpecs": {
+    "agent-tool.md": "a spec of pi-dent-agent",
+    "search-tool.md": "a spec of pi-dent-agent",
+    "skill.md": "a spec of pi-dent-agent",
+    "task.md": "a spec of pi-dent-agent"
+  },
+  "exempt": {
+    "lib/markdown-tool.ts": "the model-facing description quotes a section-number address verbatim, as an example",
+    "test/markdown-tool/document.test.ts": "test data: heading texts with section-number prefixes, not citations",
+    "test/markdown-tool/stripping.test.ts": "test data: heading texts with section-number prefixes, not citations"
+  }
+}

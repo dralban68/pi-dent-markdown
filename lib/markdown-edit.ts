@@ -1,15 +1,15 @@
 /**
- * The structural edits of specs/markdown-tool.md, Section 5: applying
- * operations to a file's lines (Sections 5.1 and 5.2), the operations
- * themselves (Section 5.3), renumbering and auto-numbering (Section 5.4), and
- * the marks and report the result is built from (Section 5.5).
+ * The structural edits of specs/markdown-tool.md, specs/markdown-tool.md#action-edit: applying
+ * operations to a file's lines (#edit-applying, #edit-line-rules), the operations
+ * themselves (specs/markdown-tool.md#edit-operations), renumbering and auto-numbering (specs/markdown-tool.md#renumbering), and
+ * the marks and report the result is built from (specs/markdown-tool.md#edit-result).
  *
  * The engine works on lines that carry an identity, so a heading line keeps its
  * identity through rewriting, re-placing, and renumbering: that is how a
- * section "persists" (Section 5.4) and how a mark stays with its line
- * (Section 5.5). After every operation the text is parsed again, and the
+ * section "persists" (specs/markdown-tool.md#renumbering) and how a mark stays with its line
+ * (specs/markdown-tool.md#edit-result). After every operation the text is parsed again, and the
  * heading sequence the operation intended is compared with the one the text
- * holds (Section 5.3, the last check).
+ * holds (specs/markdown-tool.md#edit-operations, the last check).
  */
 
 import {
@@ -38,7 +38,7 @@ import {
 // The validated call
 // ---------------------------------------------------------------------------
 
-/** The operations of Section 5.3. */
+/** The operations of specs/markdown-tool.md#edit-operations. */
 export type OperationName =
   | "replace"
   | "replace_body"
@@ -48,10 +48,10 @@ export type OperationName =
   | "rename"
   | "set_level";
 
-/** The positions of Section 5.3. */
+/** The positions of specs/markdown-tool.md#edit-operations. */
 export type OperationPosition = "before" | "after" | "first" | "last";
 
-/** The content block of Section 5.2: its lines, and how many blank lines `content` held before them. */
+/** The content block of specs/markdown-tool.md#edit-line-rules: its lines, and how many blank lines `content` held before them. */
 export interface ContentBlock {
   lines: string[];
   offset: number;
@@ -68,7 +68,7 @@ export interface Operation {
   block: ContentBlock;
 }
 
-/** A touched section of the report (Section 5.5). */
+/** A touched section of the report (specs/markdown-tool.md#edit-result). */
 export interface TouchedSection {
   address: string;
   level: number;
@@ -76,7 +76,7 @@ export interface TouchedSection {
   end: number;
 }
 
-/** A removed section of the report (Section 5.5). */
+/** A removed section of the report (specs/markdown-tool.md#edit-result). */
 export interface RemovedSection {
   start: number;
   end: number;
@@ -85,7 +85,7 @@ export interface RemovedSection {
   subsections: number;
 }
 
-/** A renumbered heading of the report (Section 5.5). */
+/** A renumbered heading of the report (specs/markdown-tool.md#edit-result). */
 export interface RenumberedHeading {
   start: number;
   level: number;
@@ -93,7 +93,7 @@ export interface RenumberedHeading {
   to: string;
 }
 
-/** A skipped group of the report (Section 5.5). */
+/** A skipped group of the report (specs/markdown-tool.md#edit-result). */
 export interface SkippedGroup {
   parent: string;
   numbers: string[];
@@ -108,7 +108,7 @@ export interface EditOutcome {
   /** Whether the call changed the text. */
   changed: boolean;
   touched: TouchedSection[];
-  /** The entry lines of the touched sections and their ancestors, in document order (Section 5.5). */
+  /** The entry lines of the touched sections and their ancestors, in document order (specs/markdown-tool.md#edit-result). */
   listed: string[];
   removed: RemovedSection[];
   renumbered: RenumberedHeading[];
@@ -136,7 +136,7 @@ interface SourceLine {
   id: number | undefined;
 }
 
-/** A line after fitting (Section 5.2), with the heading it holds when it is a heading line. */
+/** A line after fitting (specs/markdown-tool.md#edit-line-rules), with the heading it holds when it is a heading line. */
 interface OutLine {
   text: string;
   ending: string | undefined;
@@ -144,7 +144,7 @@ interface OutLine {
   heading: { level: number; text: string } | undefined;
 }
 
-/** The heading a heading line holds, as the call intends it (Section 5.3, the last check). */
+/** The heading a heading line holds, as the call intends it (specs/markdown-tool.md#edit-operations, the last check). */
 interface ExpectedHeading {
   level: number;
   text: string;
@@ -157,22 +157,22 @@ interface Work {
   defaultEnding: string;
   lastHadEnding: boolean;
   wasEmpty: boolean;
-  /** The line identities that bear a mark (Section 5.5). */
+  /** The line identities that bear a mark (specs/markdown-tool.md#edit-result). */
   marks: Set<number>;
-  /** The heading each heading line should hold after the operations so far (Section 5.3). */
+  /** The heading each heading line should hold after the operations so far (specs/markdown-tool.md#edit-operations). */
   expected: Map<number, ExpectedHeading>;
-  /** The heading text a renumbering gave a line, and the operation that did (Section 2.4). */
+  /** The heading text a renumbering gave a line, and the operation that did (specs/markdown-tool.md#section-addresses). */
   renumberedText: Map<number, { text: string; op: number }>;
-  /** The heading text a heading of the call's content was written with (Section 5.5). */
+  /** The heading text a heading of the call's content was written with (specs/markdown-tool.md#edit-result). */
   writtenText: Map<number, string>;
-  /** The sections of the file before the call, by heading line identity (Section 5.5). */
+  /** The sections of the file before the call, by heading line identity (specs/markdown-tool.md#edit-result). */
   originalHeadings: Map<
     number,
     { level: number; text: string; start: number; end: number; subsections: number }
   >;
-  /** The order of the file's headings before the call (Section 5.5). */
+  /** The order of the file's headings before the call (specs/markdown-tool.md#edit-result). */
   originalOrder: number[];
-  /** The base of the last operation that affected each group, and whether it renumbered it (Section 5.5). */
+  /** The base of the last operation that affected each group, and whether it renumbered it (specs/markdown-tool.md#edit-result). */
   groups: Map<string, { base: number; renumbered: boolean }>;
 }
 
@@ -198,13 +198,13 @@ function byIdentity(indexes: ReadonlyMap<number, number>): Map<number, number> {
   return map;
 }
 
-/** A blank line holding the file's line ending (Section 5.2). */
+/** A blank line holding the file's line ending (specs/markdown-tool.md#edit-line-rules). */
 function blankLine(work: Work): EditLine {
   return { id: work.nextId++, text: "", ending: work.defaultEnding };
 }
 
 // ---------------------------------------------------------------------------
-// Section 5.2: fitting and placing
+// specs/markdown-tool.md#edit-line-rules: fitting and placing
 // ---------------------------------------------------------------------------
 
 /** The lines of a `content` block, each taking the file's line ending when placed. */
@@ -224,7 +224,7 @@ function spanSource(lines: readonly EditLine[], start: number, end: number): Sou
 }
 
 /**
- * Fit a block to a level (Section 5.2): parse it alone and add the difference
+ * Fit a block to a level (specs/markdown-tool.md#edit-line-rules): parse it alone and add the difference
  * between the destination level and its first heading's level to each of its
  * headings. A heading whose level changes is rewritten; `undefined` leaves every
  * level as it is.
@@ -284,7 +284,7 @@ function fitLines(source: readonly SourceLine[], destination?: number): OutLine[
   return out;
 }
 
-/** The greatest level fitting gives a block, or undefined when it has no heading (Section 5.3). */
+/** The greatest level fitting gives a block, or undefined when it has no heading (specs/markdown-tool.md#edit-operations). */
 function greatestFittedLevel(
   source: readonly SourceLine[],
   destination?: number,
@@ -306,7 +306,7 @@ interface Placement {
 }
 
 /**
- * Place a block at a 0-based index (Section 5.2): insert its lines there, then
+ * Place a block at a 0-based index (specs/markdown-tool.md#edit-line-rules): insert its lines there, then
  * one empty line before it when the line before is not blank, and one empty line
  * after it when the line after is not blank.
  */
@@ -352,7 +352,7 @@ function placeBlock(
 }
 
 /**
- * Remove a range of lines (Section 5.2): the lines and every blank line directly
+ * Remove a range of lines (specs/markdown-tool.md#edit-line-rules): the lines and every blank line directly
  * after them; when no line remains after those, also every blank line directly
  * before them; and one empty line between the lines that end up on either side
  * when both exist and are not blank.
@@ -386,7 +386,7 @@ function removeRange(work: Work, lines: readonly EditLine[], from: number, to: n
   return out;
 }
 
-/** Replace a range of lines by a block: remove only those lines, and place the block where they were (Section 5.2). */
+/** Replace a range of lines by a block: remove only those lines, and place the block where they were (specs/markdown-tool.md#edit-line-rules). */
 function replaceRange(
   work: Work,
   lines: readonly EditLine[],
@@ -399,11 +399,11 @@ function replaceRange(
 }
 
 // ---------------------------------------------------------------------------
-// Section 5.1: line endings
+// specs/markdown-tool.md#edit-applying: line endings
 // ---------------------------------------------------------------------------
 
 /**
- * The line-ending rule of Section 5.1: a line that is no longer last takes the
+ * The line-ending rule of specs/markdown-tool.md#edit-applying: a line that is no longer last takes the
  * file's line ending when it has none, and the result's last line ends with a
  * line ending exactly when the file's last line did or the file was empty.
  */
@@ -428,7 +428,7 @@ function normalizeEndings(work: Work): void {
 // Addresses of an operation
 // ---------------------------------------------------------------------------
 
-/** What an operation's address names (Section 2.4). */
+/** What an operation's address names (specs/markdown-tool.md#section-addresses). */
 interface AddressResolution {
   section: number | undefined;
   preamble: boolean;
@@ -440,7 +440,7 @@ interface AddressFailure {
 }
 
 /**
- * The reference span of a section of the text an operation runs on (Section 2.4):
+ * The reference span of a section of the text an operation runs on (specs/markdown-tool.md#section-addresses):
  * its span in the file before the call, when its heading persists from there,
  * or undefined when the call wrote it.
  */
@@ -455,7 +455,7 @@ function referenceSpan(work: Work, model: DocModel, index: number): LineSpan | u
 
 /**
  * Resolve an operation's address against the text the operation runs on
- * (Sections 2.4 and 5.1), including the rejection of an address that names a
+ * (#section-addresses, #edit-applying), including the rejection of an address that names a
  * section an earlier operation renumbered onto a heading text of the file.
  */
 function resolveOperationAddress(
@@ -472,7 +472,7 @@ function resolveOperationAddress(
   if (section === undefined) return { error: noSectionMessage(model, value, path) };
   const identity = idAt(work.lines, section.headingStart);
   const record = identity === undefined ? undefined : work.renumberedText.get(identity);
-  // A line range names a section of the file before the call, so renumbering cannot redirect it (Section 2.4).
+  // A line range names a section of the file before the call, so renumbering cannot redirect it (specs/markdown-tool.md#section-addresses).
   const ranged = parseAddress(value).range !== undefined;
   if (
     record !== undefined &&
@@ -489,7 +489,7 @@ function resolveOperationAddress(
 /**
  * True when an address that resolves to a section renumbered by an earlier
  * operation of the call names a heading of the file before the call as well
- * (Section 5.1): by the heading text at steps 1 and 2, and by the number when
+ * (specs/markdown-tool.md#edit-applying): by the heading text at steps 1 and 2, and by the number when
  * the address's last component is a number component resolved at step 4.
  */
 function collidesOnRenumbering(
@@ -517,7 +517,7 @@ function collidesOnRenumbering(
 }
 
 // ---------------------------------------------------------------------------
-// Section 5.3: destinations
+// specs/markdown-tool.md#edit-operations: destinations
 // ---------------------------------------------------------------------------
 
 /** Where an `insert` or a `move` places its block, and the level fitting uses. */
@@ -528,7 +528,7 @@ interface Destination {
   level: number | undefined;
 }
 
-/** The destination of an `insert` or a `move` (Section 5.3). */
+/** The destination of an `insert` or a `move` (specs/markdown-tool.md#edit-operations). */
 function destinationOf(
   model: DocModel,
   lines: readonly EditLine[],
@@ -555,10 +555,10 @@ function destinationOf(
 }
 
 // ---------------------------------------------------------------------------
-// Section 5.3: rewriting a heading text
+// specs/markdown-tool.md#edit-operations: rewriting a heading text
 // ---------------------------------------------------------------------------
 
-/** The parts of an ATX heading line, recomputed after a rewrite (CommonMark Section 4.2). */
+/** The parts of an ATX heading line, recomputed after a rewrite ([CommonMark], Section 4.2). */
 function atxRegion(
   line: string,
 ): { openStart: number; contentStart: number; contentEnd: number } | undefined {
@@ -581,7 +581,7 @@ function atxRegion(
 }
 
 /**
- * Write a number prefix into a heading (Section 5.4): `replace` puts it in place
+ * Write a number prefix into a heading (specs/markdown-tool.md#renumbering): `replace` puts it in place
  * of the member's prefix, `prepend` puts it and one space before the first
  * character of its heading text. Returns the heading text the write gives it.
  */
@@ -610,7 +610,7 @@ function writeNumber(
       line.text = head + inserted + tail;
     }
   } else {
-    // A setext heading whose prefix changes is rewritten as fitting rewrites it (Section 5.2):
+    // A setext heading whose prefix changes is rewritten as fitting rewrites it (specs/markdown-tool.md#edit-line-rules):
     // one ATX line at its level, since the written prefix can make its content a list item.
     const span = section.headingEnd - section.headingStart + 1;
     const last = work.lines[index + span - 1];
@@ -626,10 +626,10 @@ function writeNumber(
 }
 
 // ---------------------------------------------------------------------------
-// Section 5.4: renumbering
+// specs/markdown-tool.md#renumbering: renumbering
 // ---------------------------------------------------------------------------
 
-/** A group of Section 5.4: the subsections of one section, or the top-level sections. */
+/** A group of specs/markdown-tool.md#renumbering: the subsections of one section, or the top-level sections. */
 interface GroupPlan {
   /** `top`, or `p<parent line identity>`. */
   key: string;
@@ -642,7 +642,7 @@ interface GroupPlan {
   parentBase: number[] | undefined;
 }
 
-/** What renumbering one group does (Section 5.4). */
+/** What renumbering one group does (specs/markdown-tool.md#renumbering). */
 interface Decision {
   renumber: boolean;
   /** The leading components, or undefined for none. */
@@ -668,7 +668,7 @@ function lastOf(number: NumberPrefix): number {
   return number.components[number.components.length - 1] ?? 0;
 }
 
-/** Whether a group is renumbered, and with which leading components and start (Section 5.4). */
+/** Whether a group is renumbered, and with which leading components and start (specs/markdown-tool.md#renumbering). */
 function decideGroup(group: GroupPlan, parentNow: NumberPrefix | undefined): Decision {
   const base = group.base;
   if (group.rule === 2) {
@@ -773,7 +773,7 @@ function numbersOf(model: DocModel, indexes: readonly number[]): NumberPrefix[] 
 }
 
 /**
- * Renumber the affected groups of one operation (Section 5.4), from the top
+ * Renumber the affected groups of one operation (specs/markdown-tool.md#renumbering), from the top
  * down, adding each group whose parent's number the renumbering changes.
  */
 function renumberGroups(
@@ -980,10 +980,10 @@ function renumberGroups(
 }
 
 // ---------------------------------------------------------------------------
-// Section 5.3: the operations
+// specs/markdown-tool.md#edit-operations: the operations
 // ---------------------------------------------------------------------------
 
-/** The heading text a rename writes (Section 5.3). */
+/** The heading text a rename writes (specs/markdown-tool.md#edit-operations). */
 function renameText(section: DocSection, heading: string): string {
   const existing = parseNumberPrefix(section.text);
   const given = parseNumberPrefix(heading);
@@ -997,7 +997,7 @@ function renameText(section: DocSection, heading: string): string {
   return existing.prefix + spaces + heading;
 }
 
-/** Write a rename's heading text into a section's heading (Section 5.3). */
+/** Write a rename's heading text into a section's heading (specs/markdown-tool.md#edit-operations). */
 function writeHeadingText(work: Work, section: DocSection, text: string): void {
   const line = work.lines[section.headingStart - 1];
   if (line === undefined) return;
@@ -1030,9 +1030,9 @@ interface Structural {
   renamed: number | undefined;
   /** The heading text a rename wrote, as given. */
   renameGiven: string | undefined;
-  /** The heading line identity auto-numbering may number (Section 5.4). */
+  /** The heading line identity auto-numbering may number (specs/markdown-tool.md#renumbering). */
   autoCandidate: number | undefined;
-  /** The headings the operation wrote (Section 5.4). */
+  /** The headings the operation wrote (specs/markdown-tool.md#renumbering). */
   writtenIds: Set<number>;
 }
 
@@ -1046,7 +1046,7 @@ function noEffect(): Structural {
   };
 }
 
-/** Apply one operation's structural effect to the working lines (Sections 5.2 and 5.3). */
+/** Apply one operation's structural effect to the working lines (#edit-line-rules, #edit-operations). */
 function structurally(
   work: Work,
   before: DocModel,
@@ -1229,10 +1229,10 @@ function structurally(
 }
 
 // ---------------------------------------------------------------------------
-// Section 5.3: the checks after the addresses resolve
+// specs/markdown-tool.md#edit-operations: the checks after the addresses resolve
 // ---------------------------------------------------------------------------
 
-/** The sections other than X and its descendants whose parent a `set_level` changed (Section 5.3). */
+/** The sections other than X and its descendants whose parent a `set_level` changed (specs/markdown-tool.md#edit-operations). */
 function parentChanges(
   before: DocModel,
   after: DocModel,
@@ -1266,10 +1266,10 @@ function parentChanges(
 }
 
 // ---------------------------------------------------------------------------
-// Section 5.5: the report
+// specs/markdown-tool.md#edit-result: the report
 // ---------------------------------------------------------------------------
 
-/** The report of the call (Section 5.5). */
+/** The report of the call (specs/markdown-tool.md#edit-result). */
 function reportOf(
   work: Work,
   final: DocModel,
@@ -1305,7 +1305,7 @@ function reportOf(
   }
 
   // A section whose heading does not persist is removed, even when the call writes
-  // its level and text again (Section 5.5).
+  // its level and text again (specs/markdown-tool.md#edit-result).
   const remaining = new Set<number>();
   for (const identity of ids.values()) remaining.add(identity);
   const removed: RemovedSection[] = [];
@@ -1400,7 +1400,7 @@ export interface EditInput {
   path: string;
 }
 
-/** The expected heading sequence of a text, in line order (Section 5.3). */
+/** The expected heading sequence of a text, in line order (specs/markdown-tool.md#edit-operations). */
 function expectedSequence(work: Work): ExpectedHeading[] {
   const sequence: ExpectedHeading[] = [];
   for (const line of work.lines) {
@@ -1411,7 +1411,7 @@ function expectedSequence(work: Work): ExpectedHeading[] {
 }
 
 /**
- * Apply an `edit` call's operations (Section 5), in order, each to the text the
+ * Apply an `edit` call's operations (specs/markdown-tool.md#action-edit), in order, each to the text the
  * operations before it left. An operation that fails a check rejects the call.
  */
 export function applyOperations(input: EditInput): EditResult {
@@ -1478,7 +1478,7 @@ export function applyOperations(input: EditInput): EditResult {
     const section = sectionIndex === undefined ? undefined : model.sections[sectionIndex];
     const atSection = atIndex === undefined ? undefined : model.sections[atIndex];
 
-    // The checks of Section 5.3 that run before renumbering, in their order.
+    // The checks of specs/markdown-tool.md#edit-operations that run before renumbering, in their order.
     if (op.op === "move" && sectionIndex !== undefined && atIndex !== undefined) {
       if (isWithin(model, atIndex, sectionIndex)) {
         return {

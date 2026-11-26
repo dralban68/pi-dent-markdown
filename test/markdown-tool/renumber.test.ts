@@ -5,12 +5,12 @@ import { bytesOf, call, cleanupRoots, revisionOf, runtime, tempDir, write } from
 import { must } from "../support/must.ts";
 
 /**
- * specs/markdown-tool.md Section 5.4: the groups, the bases, the conditions a
+ * specs/markdown-tool.md specs/markdown-tool.md#renumbering: the groups, the bases, the conditions a
  * group is renumbered under, auto-numbering, the top-down order, and the worked
  * examples of the section, verbatim.
  */
 
-/** The headings of the file in a directory, as `#* text`, from the outline's entries (Section 3). */
+/** The headings of the file in a directory, as `#* text`, from the outline's entries (specs/markdown-tool.md#action-outline). */
 async function headingsOf(instance: MarkdownRuntime, dir: string, name: string): Promise<string[]> {
   const outcome = await call(instance, dir, { action: "outline", path: name, depth: 6 });
   if (outcome.isError) throw new Error(outcome.text);
@@ -23,7 +23,7 @@ async function headingsOf(instance: MarkdownRuntime, dir: string, name: string):
     if (!("level" in entry) || typeof entry.level !== "number")
       throw new Error("entry without a level");
     if (typeof entry.address !== "string") throw new Error("entry address is not a string");
-    // The last component of an address is the section's own component (Section 2.4).
+    // The last component of an address is the section's own component (specs/markdown-tool.md#section-addresses).
     const component = must(entry.address.split(" > ").at(-1));
     return `${"#".repeat(entry.level)} ${component}`;
   });
@@ -123,7 +123,7 @@ const SPEC = [
   "",
 ].join("\n");
 
-test("Section 5.4: moving 3.2 Matching after 3.4 Result renumbers its group", async () => {
+test("specs/markdown-tool.md#renumbering: moving 3.2 Matching after 3.4 Result renumbers its group", async () => {
   const outcome = await edit(SPEC, [
     { op: "move", section: "3.2 Matching", position: "after", at: "3.4 Result" },
   ]);
@@ -142,7 +142,7 @@ test("Section 5.4: moving 3.2 Matching after 3.4 Result renumbers its group", as
   ]);
 });
 
-test("Section 5.4: moving ## 4. Action get under ## 2. Scope renumbers it and the later sections", async () => {
+test("specs/markdown-tool.md#renumbering: moving ## 4. Action get under ## 2. Scope renumbers it and the later sections", async () => {
   const outcome = await edit(SPEC, [
     { op: "move", section: "4. Action get", position: "last", at: "2. Scope" },
   ]);
@@ -167,7 +167,7 @@ test("Section 5.4: moving ## 4. Action get under ## 2. Scope renumbers it and th
   ]);
 });
 
-test("Section 5.4: moving an unnumbered section auto-numbers its unnumbered and numbered subsections", async () => {
+test("specs/markdown-tool.md#renumbering: moving an unnumbered section auto-numbers its unnumbered and numbered subsections", async () => {
   const base = [
     "## 1. A",
     "",
@@ -207,7 +207,7 @@ test("Section 5.4: moving an unnumbered section auto-numbers its unnumbered and 
   ]);
 });
 
-test("Section 5.4: moving a numbered section carries its subsections to its new number", async () => {
+test("specs/markdown-tool.md#renumbering: moving a numbered section carries its subsections to its new number", async () => {
   const text = [
     "# Doc",
     "",
@@ -241,7 +241,7 @@ test("Section 5.4: moving a numbered section carries its subsections to its new 
   ]);
 });
 
-test("Section 5.4: an inserted ## Overview with subsections is numbered, and the later sections shift", async () => {
+test("specs/markdown-tool.md#renumbering: an inserted ## Overview with subsections is numbered, and the later sections shift", async () => {
   const outcome = await edit(SPEC, [
     {
       op: "insert",
@@ -274,7 +274,7 @@ test("Section 5.4: an inserted ## Overview with subsections is numbered, and the
   ]);
 });
 
-test("Section 5.4: written subsection numbers are corrected, and a flat group stays flat", async () => {
+test("specs/markdown-tool.md#renumbering: written subsection numbers are corrected, and a flat group stays flat", async () => {
   const corrected = await edit(SPEC, [
     {
       op: "insert",
@@ -299,7 +299,7 @@ test("Section 5.4: written subsection numbers are corrected, and a flat group st
   assert.deepEqual(flat.headings.slice(4, 7), ["## 2. Overview", "### 1. Goals", "### 2. Limits"]);
 });
 
-test("Section 5.4: a changelog's version headings are left as written", async () => {
+test("specs/markdown-tool.md#renumbering: a changelog's version headings are left as written", async () => {
   const text = [
     "# Log",
     "",
@@ -352,7 +352,7 @@ test("Section 5.4: a changelog's version headings are left as written", async ()
   ]);
 });
 
-test("Section 5.4: a 0-based group keeps its numbers", async () => {
+test("specs/markdown-tool.md#renumbering: a 0-based group keeps its numbers", async () => {
   const text = ["# Doc", "", "## 0. Intro", "", "text", "", "## 1. Body", "", "text", ""].join(
     "\n",
   );
@@ -366,7 +366,7 @@ test("Section 5.4: a 0-based group keeps its numbers", async () => {
   ]);
 });
 
-test("Section 5.4: a moved unnumbered section gets a number only in a numbered group with a base", async () => {
+test("specs/markdown-tool.md#renumbering: a moved unnumbered section gets a number only in a numbered group with a base", async () => {
   const text = [
     "# Doc",
     "",
@@ -401,7 +401,7 @@ test("Section 5.4: a moved unnumbered section gets a number only in a numbered g
   assert.deepEqual(within.headings, ["# Doc", "## Two", "## One", "## 3. Three", "### 3.1 Child"]);
 });
 
-test("Section 5.4: renumbering runs from the top down, so a later section's subsections follow its new number", async () => {
+test("specs/markdown-tool.md#renumbering: renumbering runs from the top down, so a later section's subsections follow its new number", async () => {
   const outcome = await edit(SPEC, [{ op: "delete", section: "2. Scope" }]);
   assert.equal(outcome.isError, false);
   assert.deepEqual(outcome.headings, [
@@ -420,7 +420,7 @@ test("Section 5.4: renumbering runs from the top down, so a later section's subs
   ]);
 });
 
-test("Section 5.4: a replacing section without a number takes one in a numbered group, and a deleted one is reported", async () => {
+test("specs/markdown-tool.md#renumbering: a replacing section without a number takes one in a numbered group, and a deleted one is reported", async () => {
   const outcome = await edit(SPEC, [
     { op: "delete", section: "3.2 Matching" },
     { op: "replace", section: "3.3 Evaluation", content: "### Notes\n\nnew text" },
@@ -438,7 +438,7 @@ test("Section 5.4: a replacing section without a number takes one in a numbered 
   ]);
 });
 
-test("Section 5.4: a setext member whose prefix changes is rewritten as an ATX heading of its level", async () => {
+test("specs/markdown-tool.md#renumbering: a setext member whose prefix changes is rewritten as an ATX heading of its level", async () => {
   const text = ["# Doc", "", "## 1. One", "", "text", "", "2 Two", "-----", "", "text", ""].join(
     "\n",
   );
@@ -450,7 +450,7 @@ test("Section 5.4: a setext member whose prefix changes is rewritten as an ATX h
   ]);
 });
 
-test("Section 5.4: an unnumbered group under an unnumbered parent stays unnumbered", async () => {
+test("specs/markdown-tool.md#renumbering: an unnumbered group under an unnumbered parent stays unnumbered", async () => {
   const text = ["# Doc", "", "## One", "", "### A", "", "text", "", "### B", "", "text", ""].join(
     "\n",
   );

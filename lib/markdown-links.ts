@@ -1,4 +1,4 @@
-/** Link inventory (specs/markdown-tool.md, Section 6), run only in the worker. */
+/** Link inventory (specs/markdown-tool.md, specs/markdown-tool.md#action-links), run only in the worker. */
 import { fromMarkdown, type Extension } from "mdast-util-from-markdown";
 import { gfmTable } from "micromark-extension-gfm-table";
 import { gfmTableFromMarkdown } from "mdast-util-gfm-table";

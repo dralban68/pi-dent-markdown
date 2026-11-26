@@ -4,7 +4,7 @@ import { call, cleanupRoots, runtime, tempDir, write } from "./support.ts";
 import { must } from "../support/must.ts";
 
 /**
- * specs/markdown-tool.md Section 3: the candidates, the default and given
+ * specs/markdown-tool.md specs/markdown-tool.md#action-outline: the candidates, the default and given
  * `depth`, the entries with their hidden counts and preview lines, pagination,
  * the "no headings" lines, and the `details` shape.
  */
@@ -51,7 +51,7 @@ async function outline(
   }
 }
 
-test("Section 3: the header, the entries, and the details of a whole-file outline", async () => {
+test("specs/markdown-tool.md#action-outline: the header, the entries, and the details of a whole-file outline", async () => {
   const outcome = await outline(DOCUMENT, {});
   const revision = must(outcome.details.revision);
   assert.deepEqual(outcome.lines, [
@@ -85,7 +85,7 @@ test("Section 3: the header, the entries, and the details of a whole-file outlin
   });
 });
 
-test("Section 3: the default depth is the deepest level whose entries fit in the greater of limit and 100", async () => {
+test("specs/markdown-tool.md#action-outline: the default depth is the deepest level whose entries fit in the greater of limit and 100", async () => {
   // DOCUMENT has five sections, so every level fits in 100 and a small limit still
   // lists the deepest level by paging.
   const small = await outline(DOCUMENT, { limit: 2 });
@@ -99,7 +99,7 @@ test("Section 3: the default depth is the deepest level whose entries fit in the
   assert.equal(small.details.more, true);
 });
 
-test("Section 3: a small limit pages through every entry of the default depth", async () => {
+test("specs/markdown-tool.md#action-outline: a small limit pages through every entry of the default depth", async () => {
   const second = await outline(DOCUMENT, { limit: 2, offset: 2 });
   assert.deepEqual(second.lines.slice(1), [
     "9-11 ### One A",
@@ -111,14 +111,14 @@ test("Section 3: a small limit pages through every entry of the default depth", 
   assert.equal(last.details.more, false);
 });
 
-test("Section 3: a default depth with more than 100 entries at every level falls back to the shallowest level", async () => {
+test("specs/markdown-tool.md#action-outline: a default depth with more than 100 entries at every level falls back to the shallowest level", async () => {
   const headings = Array.from({ length: 101 }, (_, index) => `# H${index}\n`).join("\n");
   const outcome = await outline(headings, { limit: 1 });
   assert.equal(must(outcome.lines[0]).endsWith("depth 1"), true);
   assert.equal(outcome.details.total, 101);
 });
 
-test("Section 3: the default depth counts up to the greater of limit and 100 candidates", async () => {
+test("specs/markdown-tool.md#action-outline: the default depth counts up to the greater of limit and 100 candidates", async () => {
   // One `#` over 150 `##` sections: depth 2 has 151 candidates, which fits a limit of 200 only.
   const subsections = Array.from({ length: 150 }, (_, index) => `## S${index}`);
   const text = ["# Top", "", ...subsections, ""].join("\n");
@@ -132,7 +132,7 @@ test("Section 3: the default depth counts up to the greater of limit and 100 can
   assert.deepEqual(narrow.lines.slice(1), ["1-152 # Top (+150 hidden)"]);
 });
 
-test("Section 3: a given depth lists the entries down to it, with hidden counts", async () => {
+test("specs/markdown-tool.md#action-outline: a given depth lists the entries down to it, with hidden counts", async () => {
   const outcome = await outline(DOCUMENT, { depth: 2 });
   assert.deepEqual(outcome.lines.slice(1), [
     "1-19 # Doc (+2 hidden)",
@@ -146,7 +146,7 @@ test("Section 3: a given depth lists the entries down to it, with hidden counts"
   ]);
 });
 
-test("Section 3: a section-scoped outline lists it and its descendants, and it whatever its level", async () => {
+test("specs/markdown-tool.md#action-outline: a section-scoped outline lists it and its descendants, and it whatever its level", async () => {
   const outcome = await outline(DOCUMENT, { section: "One", depth: 1 });
   assert.deepEqual(outcome.lines.slice(1), ["5-15 ## One (+2 hidden)"]);
   assert.equal(outcome.details.total, 1);
@@ -154,7 +154,7 @@ test("Section 3: a section-scoped outline lists it and its descendants, and it w
   assert.deepEqual(deep.lines.slice(1), ["5-15 ## One", "9-11 ### One A", "13-15 ### One B"]);
 });
 
-test("Section 3: preview lines show the first line of the own body, flattened, and cut to 100 characters", async () => {
+test("specs/markdown-tool.md#action-outline: preview lines show the first line of the own body, flattened, and cut to 100 characters", async () => {
   const text = ["# Doc", "", "  alpha   beta  ", "", "## Empty", "", "### Child", "", "x", ""].join(
     "\n",
   );
@@ -179,7 +179,7 @@ test("Section 3: preview lines show the first line of the own body, flattened, a
   assert.equal(cut.lines[2], `    ${"y".repeat(100)}\u2026`);
 });
 
-test("Section 3: pagination reports the next offset, and an offset past the last entry is rejected", async () => {
+test("specs/markdown-tool.md#action-outline: pagination reports the next offset, and an offset past the last entry is rejected", async () => {
   const first = await outline(DOCUMENT, { depth: 3, limit: 2 });
   assert.deepEqual(first.lines, [
     must(first.lines[0]),
@@ -211,7 +211,7 @@ test("Section 3: pagination reports the next offset, and an offset past the last
   assert.equal(zero.isError, false);
 });
 
-test("Section 3: (no headings) and the shallowest-level line", async () => {
+test("specs/markdown-tool.md#action-outline: (no headings) and the shallowest-level line", async () => {
   const none = await outline("just text\n", {});
   assert.deepEqual(none.lines.slice(1), ["1-1 (preamble)", "(no headings)"]);
   assert.equal(none.details.total, 0);
@@ -223,7 +223,7 @@ test("Section 3: (no headings) and the shallowest-level line", async () => {
   ]);
 });
 
-test("Section 3: the frontmatter and preamble lines appear only without section and offset 0", async () => {
+test("specs/markdown-tool.md#action-outline: the frontmatter and preamble lines appear only without section and offset 0", async () => {
   const text = ["---", "x: y", "---", "", "intro", "", "# A", "", "text", ""].join("\n");
   const whole = await outline(text, {});
   assert.deepEqual(whole.lines.slice(1, 4), ["1-3 (frontmatter)", "5-5 (preamble)", "7-9 # A"]);
@@ -257,7 +257,7 @@ test("Section 3: the frontmatter and preamble lines appear only without section 
   assert.deepEqual(paged.lines.slice(1), ["11-13 ## B"]);
 });
 
-test("Section 3: an unknown section address is a tool error with a suggestion when one is similar", async () => {
+test("specs/markdown-tool.md#action-outline: an unknown section address is a tool error with a suggestion when one is similar", async () => {
   const unknown = await outline(DOCUMENT, { section: "One Z" });
   assert.equal(unknown.isError, true);
   assert.equal(unknown.text, 'no section "One Z" in a.md. Run outline to list its sections.');
@@ -276,7 +276,7 @@ test("Section 3: an unknown section address is a tool error with a suggestion wh
   );
 });
 
-test("Section 3: an empty file has no heading and 0 lines", async () => {
+test("specs/markdown-tool.md#action-outline: an empty file has no heading and 0 lines", async () => {
   const outcome = await outline("", {});
   assert.deepEqual(outcome.lines.slice(1), ["(no headings)"]);
   assert.equal(outcome.details.lines, 0);

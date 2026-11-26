@@ -14,17 +14,17 @@ the one its `path` names, and MUST NOT create or delete a file.
 ## 1. Tool registration surface {#registration}
 
 pi-dent's extension MUST register the tool through the host `registerTool` API, in every run mode; the
-package's standalone entry registers it the same way (Section 1.5):
+package's standalone entry registers it the same way ([standalone extension entry](#standalone-entry)):
 
-| Field              | Value                                                          |
-| ------------------ | -------------------------------------------------------------- |
-| `name`             | `"Markdown"`                                                   |
-| `label`            | `"Markdown"`                                                   |
-| `description`      | The text of Section 1.4                                        |
-| `promptSnippet`    | The text of Section 1.4                                        |
-| `parameters`       | The parameter schema of Section 1.1, described per Section 1.4 |
-| `prepareArguments` | The argument preparation of Section 1.2                        |
-| `renderShell`      | not set: the host's default tool shell                         |
+| Field              | Value                                                                                                            |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `name`             | `"Markdown"`                                                                                                     |
+| `label`            | `"Markdown"`                                                                                                     |
+| `description`      | The text of [model-facing texts](#model-facing-texts)                                                            |
+| `promptSnippet`    | The text of [model-facing texts](#model-facing-texts)                                                            |
+| `parameters`       | The parameter schema of [parameter schema](#parameters), described per [model-facing texts](#model-facing-texts) |
+| `prepareArguments` | The argument preparation of [argument preparation](#argument-preparation)                                        |
+| `renderShell`      | not set: the host's default tool shell                                                                           |
 
 A child session binds `Markdown` under the rule of pi-dent-agent `specs/agent-tool.md`, Section 3.1.
 The tool has no configuration key. Every rejection this specification gives is a tool error
@@ -37,30 +37,30 @@ The parameter schema is a JSON object schema with `type: "object"` and
 is optional in the schema and admits `null` beside the type in the table, and each action accepts
 only its fields below. A field whose value is `null` counts as absent.
 
-| Field        | Type                                       | Actions                    | Contract                                                                                                                                                                                                |
-| ------------ | ------------------------------------------ | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `action`     | `"outline" \| "read" \| "edit" \| "links"` | all                        | The operation to perform.                                                                                                                                                                               |
-| `path`       | string                                     | all                        | The file (Section 2.1).                                                                                                                                                                                 |
-| `section`    | string? \| null                            | `outline`, `read`, `links` | A section address (Section 2.4). Required for `read`. `outline`: the section listed with its descendants; `links`: the section whose span is the scope (Section 6); absent: the whole file.             |
-| `depth`      | integer? \| null                           | `outline`, `read`          | A heading level, `1` to `6`. `outline`: the deepest level listed (Section 3). `read`: the deepest level shown whole (Section 4).                                                                        |
-| `preview`    | boolean? \| null                           | `outline`                  | `true`: each entry is followed by its preview line (Section 3). Default `false`.                                                                                                                        |
-| `offset`     | integer? \| null                           | `outline`, `read`, `links` | `outline`: the number of entries to skip, default `0`. `links`: the number of items to skip, default `0`. `read`: the file line number to start at, default the section's first line.                   |
-| `limit`      | integer? \| null                           | `outline`, `read`, `links` | `outline`: the most entries to list, `1` to `500`, default `100`. `links`: the most items to list, `1` to `500`, default `100`. `read`: the most display lines to return, `1` to `2000`, default `500`. |
-| `revision`   | string? \| null                            | `edit`                     | Required for `edit`. The revision (Section 2.1) the caller last saw.                                                                                                                                    |
-| `operations` | operation[] (min 1, max 50)? \| null       | `edit`                     | Required for `edit`. The operations, applied in array order (Section 5).                                                                                                                                |
+| Field        | Type                                       | Actions                    | Contract                                                                                                                                                                                                                                      |
+| ------------ | ------------------------------------------ | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `action`     | `"outline" \| "read" \| "edit" \| "links"` | all                        | The operation to perform.                                                                                                                                                                                                                     |
+| `path`       | string                                     | all                        | The file ([file access](#file-access)).                                                                                                                                                                                                       |
+| `section`    | string? \| null                            | `outline`, `read`, `links` | A section address ([section addresses](#section-addresses)). Required for `read`. `outline`: the section listed with its descendants; `links`: the section whose span is the scope ([action `links`](#action-links)); absent: the whole file. |
+| `depth`      | integer? \| null                           | `outline`, `read`          | A heading level, `1` to `6`. `outline`: the deepest level listed ([action `outline`](#action-outline)). `read`: the deepest level shown whole ([action `read`](#action-read)).                                                                |
+| `preview`    | boolean? \| null                           | `outline`                  | `true`: each entry is followed by its preview line ([action `outline`](#action-outline)). Default `false`.                                                                                                                                    |
+| `offset`     | integer? \| null                           | `outline`, `read`, `links` | `outline`: the number of entries to skip, default `0`. `links`: the number of items to skip, default `0`. `read`: the file line number to start at, default the section's first line.                                                         |
+| `limit`      | integer? \| null                           | `outline`, `read`, `links` | `outline`: the most entries to list, `1` to `500`, default `100`. `links`: the most items to list, `1` to `500`, default `100`. `read`: the most display lines to return, `1` to `2000`, default `500`.                                       |
+| `revision`   | string? \| null                            | `edit`                     | Required for `edit`. The revision ([file access](#file-access)) the caller last saw.                                                                                                                                                          |
+| `operations` | operation[] (min 1, max 50)? \| null       | `edit`                     | Required for `edit`. The operations, applied in array order ([action `edit`](#action-edit)).                                                                                                                                                  |
 
 An operation is a JSON object schema with `additionalProperties: false` and one required field,
 `op`; every other field is optional and admits `null`, and each `op` accepts only its fields:
 
-| Field      | Type                                                                                       | Ops                                 | Contract                                          |
-| ---------- | ------------------------------------------------------------------------------------------ | ----------------------------------- | ------------------------------------------------- |
-| `op`       | `"replace" \| "replace_body" \| "insert" \| "delete" \| "move" \| "rename" \| "set_level"` | all                                 | The operation (Section 5.3).                      |
-| `section`  | string? \| null                                                                            | all but `insert`                    | Required. The section address acted on.           |
-| `position` | `"before" \| "after" \| "first" \| "last"`? \| null                                        | `insert`, `move`                    | Required. Where to place, relative to `at`.       |
-| `at`       | string? \| null                                                                            | `insert`, `move`                    | Required. The section address placed relative to. |
-| `content`  | string? \| null                                                                            | `replace`, `replace_body`, `insert` | Required. Markdown text (Section 5.3).            |
-| `heading`  | string? \| null                                                                            | `rename`                            | Required. The new heading text.                   |
-| `level`    | integer? \| null                                                                           | `set_level`                         | Required. The new heading level, `1` to `6`.      |
+| Field      | Type                                                                                       | Ops                                 | Contract                                                  |
+| ---------- | ------------------------------------------------------------------------------------------ | ----------------------------------- | --------------------------------------------------------- |
+| `op`       | `"replace" \| "replace_body" \| "insert" \| "delete" \| "move" \| "rename" \| "set_level"` | all                                 | The operation ([operations](#edit-operations)).           |
+| `section`  | string? \| null                                                                            | all but `insert`                    | Required. The section address acted on.                   |
+| `position` | `"before" \| "after" \| "first" \| "last"`? \| null                                        | `insert`, `move`                    | Required. Where to place, relative to `at`.               |
+| `at`       | string? \| null                                                                            | `insert`, `move`                    | Required. The section address placed relative to.         |
+| `content`  | string? \| null                                                                            | `replace`, `replace_body`, `insert` | Required. Markdown text ([operations](#edit-operations)). |
+| `heading`  | string? \| null                                                                            | `rename`                            | Required. The new heading text.                           |
+| `level`    | integer? \| null                                                                           | `set_level`                         | Required. The new heading level, `1` to `6`.              |
 
 The schema constrains the types of the tables, the values of `action`, `op`, and `position`, the
 length bounds of `operations`, and the set of admitted properties, and nothing else. A call the
@@ -82,32 +82,32 @@ array holding that object. It MUST leave every other argument unchanged.
 Execution-time validation MUST reject the call as a tool error (`isError: true`) whose text is
 the error text of the first failing check, in this order, before the file is read:
 
-| #   | Check                                                                                                                              | Error text                                                                                    |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| 1   | A field other than `action` and `path` that the action does not accept is present (first such field in table order of Section 1.1) | `<field> is not valid for action <action>`                                                    |
-| 2   | `path` is empty after trimming                                                                                                     | `path must be a non-empty string`                                                             |
-| 3   | `read`: `section` is absent or empty after trimming; `outline`, `links`: `section` is present and empty after trimming             | `section must be a non-empty string`                                                          |
-| 4   | `section` is `(document)`, or `outline`: `section` is `(preamble)`                                                                 | `<name> is not valid as the section of <action>`                                              |
-| 5   | `depth` is present and not an integer from 1 to 6                                                                                  | `depth must be an integer from 1 to 6`                                                        |
-| 6   | `outline`, `links`: `offset` is present and not a non-negative integer                                                             | `offset must be a non-negative integer`                                                       |
-| 7   | `read`: `offset` is present and not a positive integer                                                                             | `offset must be a positive integer`                                                           |
-| 8   | `outline`, `links`: `limit` is present and not an integer from 1 to 500                                                            | `limit must be an integer from 1 to 500`                                                      |
-| 9   | `read`: `limit` is present and not an integer from 1 to 2000                                                                       | `limit must be an integer from 1 to 2000`                                                     |
-| 10  | `edit`: `revision` is absent or, after trimming, not 8 lowercase hexadecimal digits                                                | `revision must be the 8-digit revision an outline, read, or edit result showed for this file` |
-| 11  | `edit`: `operations` is absent, is not an array, or holds fewer than 1 or more than 50 elements                                    | `operations must hold 1 to 50 operations`                                                     |
+| #   | Check                                                                                                                                                  | Error text                                                                                    |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| 1   | A field other than `action` and `path` that the action does not accept is present (first such field in table order of [parameter schema](#parameters)) | `<field> is not valid for action <action>`                                                    |
+| 2   | `path` is empty after trimming                                                                                                                         | `path must be a non-empty string`                                                             |
+| 3   | `read`: `section` is absent or empty after trimming; `outline`, `links`: `section` is present and empty after trimming                                 | `section must be a non-empty string`                                                          |
+| 4   | `section` is `(document)`, or `outline`: `section` is `(preamble)`                                                                                     | `<name> is not valid as the section of <action>`                                              |
+| 5   | `depth` is present and not an integer from 1 to 6                                                                                                      | `depth must be an integer from 1 to 6`                                                        |
+| 6   | `outline`, `links`: `offset` is present and not a non-negative integer                                                                                 | `offset must be a non-negative integer`                                                       |
+| 7   | `read`: `offset` is present and not a positive integer                                                                                                 | `offset must be a positive integer`                                                           |
+| 8   | `outline`, `links`: `limit` is present and not an integer from 1 to 500                                                                                | `limit must be an integer from 1 to 500`                                                      |
+| 9   | `read`: `limit` is present and not an integer from 1 to 2000                                                                                           | `limit must be an integer from 1 to 2000`                                                     |
+| 10  | `edit`: `revision` is absent or, after trimming, not 8 lowercase hexadecimal digits                                                                    | `revision must be the 8-digit revision an outline, read, or edit result showed for this file` |
+| 11  | `edit`: `operations` is absent, is not an array, or holds fewer than 1 or more than 50 elements                                                        | `operations must hold 1 to 50 operations`                                                     |
 
 Then, for each operation in array order, checks 12 to 22; the first failure is reported:
 
 | #   | Check                                                                                                                                                                                                                                                                                                                                                                    | Error text                                                                                                                  |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| 12  | A field other than `op` that the op does not accept is present (first such field in table order of Section 1.1)                                                                                                                                                                                                                                                          | `operations[<i>]: <field> is not valid for op <op>`                                                                         |
+| 12  | A field other than `op` that the op does not accept is present (first such field in table order of [parameter schema](#parameters))                                                                                                                                                                                                                                      | `operations[<i>]: <field> is not valid for op <op>`                                                                         |
 | 13  | A field the op accepts is absent (first such field in table order)                                                                                                                                                                                                                                                                                                       | `operations[<i>]: op <op> requires <field>`                                                                                 |
 | 14  | `section` or `at` is empty after trimming (first in table order)                                                                                                                                                                                                                                                                                                         | `operations[<i>]: <field> must be a non-empty string`                                                                       |
 | 15  | `section` is `(document)`, or `section` is `(preamble)` and `op` is not `replace_body`, or `at` is `(preamble)` (first in table order)                                                                                                                                                                                                                                   | `operations[<i>]: <name> is not valid as the <field> of op <op>`                                                            |
 | 16  | `at` is `(document)` and `position` is `before` or `after`                                                                                                                                                                                                                                                                                                               | `operations[<i>]: at (document) takes position first or last`                                                               |
 | 17  | `heading` is empty after trimming or contains a line ending                                                                                                                                                                                                                                                                                                              | `operations[<i>]: heading must be one non-empty line`                                                                       |
 | 18  | `level` is not an integer from 1 to 6                                                                                                                                                                                                                                                                                                                                    | `operations[<i>]: level must be an integer from 1 to 6`                                                                     |
-| 19  | `replace`, `insert`: the content block (Section 5.2) is empty, or its first line is not the heading line of a heading of the block parsed alone (Section 5.2)                                                                                                                                                                                                            | `operations[<i>]: content must start with a heading line`                                                                   |
+| 19  | `replace`, `insert`: the content block ([line rules](#edit-line-rules)) is empty, or its first line is not the heading line of a heading of the block parsed alone ([line rules](#edit-line-rules))                                                                                                                                                                      | `operations[<i>]: content must start with a heading line`                                                                   |
 | 20  | `replace`, `insert`: another heading of the block parsed alone has a level not greater than the first heading's                                                                                                                                                                                                                                                          | `operations[<i>]: content must be one section: line <n> is a heading of level <l>`                                          |
 | 21  | `replace_body`: the block parsed alone has a heading                                                                                                                                                                                                                                                                                                                     | `operations[<i>]: replace_body content must contain no heading: line <n> is one`                                            |
 | 22  | `replace`, `insert`, `replace_body`: a line of the content block is, without leading and trailing spaces and tabs, `[… <k> lines hidden: <a>-<b>]`, `--- cut: continue with offset <c> ---`, or `--- end of section ---`, or ends with ` · lines <a>-<b> · revision <r>`, `<k>`, `<a>`, `<b>`, and `<c>` being decimal integers and `<r>` 8 lowercase hexadecimal digits | `operations[<i>]: content line <n> is a marker of read, not file text; read the section without depth and to its end first` |
@@ -117,8 +117,8 @@ A field an op accepts is one whose "Ops" cell names the op; every such field is 
 is the operation's 0-based index; `<name>` is `(document)` or `(preamble)`;
 `<n>` is the line number, in `content` as given counting from 1, of the first such heading's
 heading line, or for check 22 of the first such line; `<l>` is the heading's level. A value is
-`(document)` or `(preamble)` when it equals that string after the stripping of Section 2.4. The checks of Sections 2 to 6, which read the file, run after these: first
-those of Section 2.1, then the address resolution of Section 2.4, then those of the action's own
+`(document)` or `(preamble)` when it equals that string after the stripping of [section addresses](#section-addresses). The checks of [documents](#documents), [action `outline`](#action-outline), [action `read`](#action-read), [action `edit`](#action-edit), and [action `links`](#action-links), which read the file, run after these: first
+those of [file access](#file-access), then the address resolution of [section addresses](#section-addresses), then those of the action's own
 section.
 
 ### 1.4 Model-facing texts {#model-facing-texts}
@@ -169,7 +169,7 @@ The package registers the tool on its own, through the entry `extension.ts`, so 
 the host `ExtensionAPI` and calls `pi.registerTool(makeMarkdownTool(markdownRuntime()))`, giving
 `markdownRuntime()` no options: its defaults are the host's own file system, `homedir()`, the host's
 mutation queue, and the default parse budget. The tool registered is the one of the table of
-Section 1, and the tool has no configuration key here either.
+[tool registration surface](#registration), and the tool has no configuration key here either.
 
 The library surface stays as pi-dent-agent consumes it: `index.ts` keeps its exports, the entry is
 the only file that calls `registerTool`, and pi-dent-agent never loads the entry. A host with
@@ -183,7 +183,7 @@ pi-dent-agent user does not need this package installed.
 The trimmed `path`, with one leading `@` removed, `~` or a leading `~/` standing for the user's
 home directory, resolves against the working directory of the invoking session when it is
 relative. Any file is read as Markdown, whatever its name. `<path>` in a result or error text is
-the trimmed `path` as given. After the checks of Section 1.3, the call MUST be rejected as a tool
+the trimmed `path` as given. After the checks of [validation](#validation), the call MUST be rejected as a tool
 error, the first failure reported, in this order:
 
 | Check                                                              | Error text                                                                                                            |
@@ -210,7 +210,7 @@ shows it.
 The file's text is its bytes decoded as UTF-8, without a leading U+FEFF, which is not part of
 line 1 and which an `edit` call keeps. A line ending is a line feed, a carriage return not
 followed by a line feed, or a carriage return followed by a line feed ([CommonMark],
-Section 2.1). The text is split into lines at line endings; a line ending ends its line, and a
+[file access](#file-access)). The text is split into lines at line endings; a line ending ends its line, and a
 line ending at the end of the text starts no further line. Lines are numbered from 1; the
 file's line count is the number of lines, `0` for an empty text. A blank line is a line holding
 only spaces and tabs, or nothing ([CommonMark], Section 2.1).
@@ -258,7 +258,7 @@ or a nested list (`- a` with ` - b`), MUST take less than 5000 ms on a developer
 > time, so it sits ten times above the measurement, clear of a loaded machine.
 
 > Note (non-normative): the parser's time grows with the square of the size on files with many
-> lists or block quotes, so a file well within the size limit of Section 2.1 can exceed the
+> lists or block quotes, so a file well within the size limit of [file access](#file-access) can exceed the
 > budget.
 
 ### 2.3 Sections {#sections}
@@ -292,13 +292,13 @@ separator: a space, `>`, and a space.
 A section address names a section. Its value is trimmed, then stripped, in this order and each at
 most once, of a leading `* `, a leading line range `<a>-<b> ` (`<a>` and `<b>` decimal integers,
 then one space), and a trailing ` (+<k> hidden)` (`<k>` a decimal integer). The stripped value
-`(preamble)` names the preamble and `(document)` the document, where Section 1.3 admits them,
+`(preamble)` names the preamble and `(document)` the document, where [validation](#validation) admits them,
 whether or not a line range was stripped. Any other stripped value is split at each occurrence of
 the separator into components, each trimmed and then stripped, at most once, of leading heading
 marks `#{1,6} ` (one to six `#`, then one space). A section's reference span is its span
-(Section 2.3) in an `outline`, `read`, or `links` call; in an `edit` call it is the span, in the file before
+([sections](#sections)) in an `outline`, `read`, or `links` call; in an `edit` call it is the span, in the file before
 the call, of the section whose heading it persists from through every earlier operation of the
-call (Section 5.4), and it has none when there is no such section. A section matches when its own
+call ([renumbering](#renumbering)), and it has none when there is no such section. A section matches when its own
 component matches the last component and the other components, in their order, match components
 of ancestors of it, in the same order, not necessarily consecutive; when a line range was
 stripped, it matches only when its reference span starts at line `<a>` and ends at line `<b>`,
@@ -311,17 +311,17 @@ component before they are compared. Matching runs in up to four steps:
    replaced by one space, leading and trailing spaces removed, and the result converted by
    ECMAScript `String.prototype.toLowerCase` ([ECMA-262]).
 3. When step 2 matches no section, a component matches when both are equal after removing a
-   leading number prefix (Section 5.4) from each and then normalizing as in step 2.
+   leading number prefix ([renumbering](#renumbering)) from each and then normalizing as in step 2.
 4. When steps 1 to 3 match no section, a component matches when it matches under step 3, or
    when it is a number component and the section's heading text starts with a number prefix
-   (Section 5.4) of the same number. A number component is a component that is, after an
+   ([renumbering](#renumbering)) of the same number. A number component is a component that is, after an
    optional leading `Section ` (one space) or `§` and zero or more spaces and tabs, one or more
    runs of the digits `0` to `9` joined by single `.` characters, optionally followed by one more
    `.`, and nothing else; its number is the sequence of integers its runs denote.
 
 In an `edit` call, an operation's address without a line range that resolves to a section `S`
 MUST be rejected when an earlier operation of the call gave `S` its name by renumbering
-(Section 5.4) and another heading of the file before the call had that name. The name is `S`'s heading text when the
+([renumbering](#renumbering)) and another heading of the file before the call had that name. The name is `S`'s heading text when the
 address resolves at step 1 or 2, and `S`'s number when it resolves at step 4 with a last
 component that is a number component, which another heading has when its number is the same. The
 error text is
@@ -387,7 +387,7 @@ The text is these lines, joined by one line feed, each present only under its co
 | `More entries follow: repeat the call with offset: <next>`                 | `<next>`, `offset` plus the number shown, is less than `<total>` |
 
 An entry line is `<start>-<end> <marks> <component><hidden>`: the section's heading line and end
-line, `#` repeated as many times as its level, its component (Section 2.4), and
+line, `#` repeated as many times as its level, its component ([section addresses](#section-addresses)), and
 ` (+<k> hidden)` when `<k>`, the number of its descendants that are not entries, is at least 1,
 else empty. A preview line is four spaces followed by the first line of the section's own body,
 flattened (pi-dent-agent `specs/search-tool.md`, Section 3.4) and, when longer than 100 characters,
@@ -445,8 +445,8 @@ serialization of the host's `edit` and `write` tools, keyed by the path with sym
 resolved — from before it reads the file until its write ends or it fails.
 
 The operations apply in array order, each to the text the operations before it left, and each
-operation's addresses resolve against that text, renumbering (Section 5.4) included, as Section 2.4 gives. When an operation fails a check of
-Section 2.4 or 5.3, the call MUST be rejected with that error and MUST NOT write the file. When the resulting text equals the file's
+operation's addresses resolve against that text, renumbering ([renumbering](#renumbering)) included, as [section addresses](#section-addresses) gives. When an operation fails a check of
+[section addresses](#section-addresses) or [operations](#edit-operations), the call MUST be rejected with that error and MUST NOT write the file. When the resulting text equals the file's
 text, the call MUST NOT write the file; otherwise it MUST write the result, with the file's
 leading U+FEFF when it had one, over the file's content in place. A write that fails MUST reject
 the call with the text `cannot write <path>: <code>`.
@@ -456,24 +456,24 @@ the text `Markdown aborted` and MUST NOT write the file; a write already started
 completed, and the call returns its result. An aborted `outline`, `read`, or `links` call MUST end with the
 same error.
 
-The call MUST NOT change a line other than those Sections 5.2 to 5.4 give an operation to write,
+The call MUST NOT change a line other than those [line rules](#edit-line-rules), [operations](#edit-operations), and [renumbering](#renumbering) give an operation to write,
 replace, rewrite, or remove, nor the line ending of one, except as the line-ending rule below
 gives.
 
 Line endings: a line of the result that comes from a line of the text before the operation —
 kept, re-placed by `move` or `set_level`, or rewritten by renaming, fitting, or renumbering —
 keeps that line's line ending; a line that replaces several lines keeps the line ending of the
-last of them. A line of `content` the call places, every empty line Section 5.2 inserts, and a
+last of them. A line of `content` the call places, every empty line [line rules](#edit-line-rules) inserts, and a
 former last line without a line ending that is no longer last take the file's line ending: that
 of the file's first line, or a line feed when the file is empty or its first line has no line
 ending. The result's last line ends with a line ending when the file's last line did or the file
 was empty, and with none otherwise; this rule overrides the others of this paragraph.
 
-No operation changes heading text other than `rename` and renumbering (Section 5.4).
+No operation changes heading text other than `rename` and renumbering ([renumbering](#renumbering)).
 
 ### 5.2 Line rules {#edit-line-rules}
 
-- The content block of `content` is its lines (split as in Section 2.1) without leading and
+- The content block of `content` is its lines (split as in [file access](#file-access)) without leading and
   trailing blank lines; it can be empty.
 - Placing a block at a position inserts its lines there; then, when the line before the block
   exists and is not blank, one empty line is inserted before it, and when the line after the
@@ -484,7 +484,7 @@ No operation changes heading text other than `rename` and renumbering (Section 5
   remains after those, it also removes every blank line directly before them. When the lines
   that end up on either side of the removed lines both exist and are not blank, one empty line is
   inserted between them.
-- A block parsed alone is the block's lines parsed as the document of Section 2.2 is, with no
+- A block parsed alone is the block's lines parsed as the document of [parsing](#parsing) is, with no
   frontmatter recognized.
 - Fitting a block to level `L` parses the block alone and adds `L` minus the level of its first
   heading to the level of each of its headings. A heading whose level changes is
@@ -495,19 +495,19 @@ No operation changes heading text other than `rename` and renumbering (Section 5
 ### 5.3 Operations {#edit-operations}
 
 `X` is the section `section` names and `Y` the section `at` names, `section` resolved before `at`
-per Section 2.4, both before the operation changes anything; `B` is the content block. For
+per [section addresses](#section-addresses), both before the operation changes anything; `B` is the content block. For
 `move`, `Y`'s heading lines, own body, and end line are those it has in the text the removal
 left.
 
-| `op`           | Effect                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `replace`      | Replace `X`'s span by `B` fitted to `X`'s level.                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `replace_body` | With `B` empty, remove `X`'s own body when it is not empty. Otherwise replace the own body by `B`, or, when the own body is empty, place `B` after `X`'s heading's lines. For `(preamble)` the preamble takes the place of the own body, and an absent preamble's place is before the first heading line, or the end of the text when there is none.                                                                                                                               |
-| `insert`       | Place `B`, fitted to the destination level, at the destination (below).                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `delete`       | Remove `X`'s span.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `move`         | Remove `X`'s span; then place the span's lines, fitted to the destination level, at the destination in the text the removal left.                                                                                                                                                                                                                                                                                                                                                  |
-| `rename`       | Write the new text as `X`'s heading text: `heading`, trimmed, preceded, when `X`'s heading is numbered and `heading` has no number prefix (Section 5.4), by `X`'s prefix and the spaces and tabs after it. An ATX heading's raw contents are replaced by it, the rest of the line kept; one with empty raw contents becomes its opening sequence, one space, and the new text, any closing sequence dropped. A setext heading's content lines are replaced by one line holding it. |
-| `set_level`    | Replace `X`'s span by itself fitted to `level`.                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `op`           | Effect                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `replace`      | Replace `X`'s span by `B` fitted to `X`'s level.                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `replace_body` | With `B` empty, remove `X`'s own body when it is not empty. Otherwise replace the own body by `B`, or, when the own body is empty, place `B` after `X`'s heading's lines. For `(preamble)` the preamble takes the place of the own body, and an absent preamble's place is before the first heading line, or the end of the text when there is none.                                                                                                                                               |
+| `insert`       | Place `B`, fitted to the destination level, at the destination (below).                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `delete`       | Remove `X`'s span.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `move`         | Remove `X`'s span; then place the span's lines, fitted to the destination level, at the destination in the text the removal left.                                                                                                                                                                                                                                                                                                                                                                  |
+| `rename`       | Write the new text as `X`'s heading text: `heading`, trimmed, preceded, when `X`'s heading is numbered and `heading` has no number prefix ([renumbering](#renumbering)), by `X`'s prefix and the spaces and tabs after it. An ATX heading's raw contents are replaced by it, the rest of the line kept; one with empty raw contents becomes its opening sequence, one space, and the new text, any closing sequence dropped. A setext heading's content lines are replaced by one line holding it. |
+| `set_level`    | Replace `X`'s span by itself fitted to `level`.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 
 | `position` | Destination with `at` a section `Y`                                                              | Destination level  | With `at` `(document)`                                                                     |
 | ---------- | ------------------------------------------------------------------------------------------------ | ------------------ | ------------------------------------------------------------------------------------------ |
@@ -529,7 +529,7 @@ in this order:
 | The text after the operation has frontmatter and the text before it had none                                                                                                                                                                                                                      | `operations[<i>]: the edited text would make lines 1-<f> frontmatter`                                                                                                      |
 | The sequence of the levels and heading texts of the document's headings after the operation is not the expected one: that of the headings before it, without those it removed, with those it wrote or placed, at the levels it gave them, and with the heading texts `rename` and renumbering set | `operations[<i>]: the edited text would not parse as intended near line <n>; check code fences and HTML blocks in the content or around line <n>`                          |
 
-Renumbering (Section 5.4) completes each operation that is not rejected by the first four
+Renumbering ([renumbering](#renumbering)) completes each operation that is not rejected by the first four
 checks; the last three checks see its result.
 
 `<address>` is the full address of `X` in the `move` and `set_level` texts and of `Y` in the
@@ -588,7 +588,7 @@ when the base is empty or its leading components are not none, and none otherwis
 prefix is replaced by the number's components in decimal without leading zeros, joined by `.`,
 followed by `.` when the base's first number has a trailing dot, or, when the base is empty,
 when `P` is none and the member's own prefix has one; the rest of its heading line is kept. A
-setext member whose prefix changes is then rewritten as fitting rewrites it (Section 5.2), at its
+setext member whose prefix changes is then rewritten as fitting rewrites it ([line rules](#edit-line-rules)), at its
 level, since a written prefix can make its content line a list item. A
 member that is not numbered keeps its text and takes no number, unless it is auto-numbered.
 
@@ -649,13 +649,13 @@ mark after the last operation.
 When the call wrote no change the text is `<path> unchanged · <lines> lines · revision <revision>`.
 Otherwise the text is the line `Edited <path>: <k> operations · <lines> lines · revision <revision>`,
 followed by one line per touched section and per ancestor of one, in document order: `* ` before
-the entry line (Section 3) of a touched section and two spaces before that of an ancestor that is
+the entry line ([action `outline`](#action-outline)) of a touched section and two spaces before that of an ancestor that is
 not touched, `<hidden>` counting the descendants without a line. Then follow these blocks, each
 present only when it has at least one section, heading, or group to list:
 
 1. The line `<q> sections removed or overwritten:`, then one line per removed section in their order before the
    call: two spaces, `<start>-<end> <marks> <text> (<n> lines, <s> subsections)`, where `<start>`
-   and `<end>` are its span before the call (Section 2.3), `<marks>` and `<text>` its level and
+   and `<end>` are its span before the call ([sections](#sections)), `<marks>` and `<text>` its level and
    heading text before the call, `<n>` the number of lines of that span, and `<s>` its number of
    subsections before the call. `lines` and `subsections` stay plural whatever the number.
 2. The line
@@ -668,7 +668,7 @@ present only when it has at least one section, heading, or group to list:
 Lines are joined by one line feed.
 
 A removed section is a section of the file before the call whose heading does not persist
-through every operation (Section 5.4): the `X` of a `delete` or `replace`, or a descendant of
+through every operation ([renumbering](#renumbering)): the `X` of a `delete` or `replace`, or a descendant of
 it, even when the call writes its level and heading text again; `<q>` is their number.
 A skipped group is a group of the text after the call whose base, in the last operation of the
 call that affected it, was not empty, which that operation did not renumber, and which has at
@@ -695,9 +695,9 @@ orders above, `from` and `to` being `<old>` and `<new>`, `end` and `subsections`
 
 ## 6. Action `links` {#action-links}
 
-This action parses the document as Section 2.2 does, with the extended autolinks of [GFM],
+This action parses the document as [parsing](#parsing) does, with the extended autolinks of [GFM],
 Section 6.9, in addition; the extension changes no block structure, so the sections are those of
-Section 2.3. The scope is the span of the addressed section, the preamble's lines for
+[sections](#sections). The scope is the span of the addressed section, the preamble's lines for
 `(preamble)`, or, without `section`, every line of the document.
 
 ### 6.1 Items {#link-items}
@@ -789,23 +789,23 @@ padding and no background of its own.
 
 ## 9. Specification gaps {#specification-gaps}
 
-- A heading whose text contains the separator of Section 2.4 cannot be named by an address that
+- A heading whose text contains the separator of [section addresses](#section-addresses) cannot be named by an address that
   includes its text.
 - A heading whose text starts with `* ` or `<a>-<b> ` (such as `2024-2025 Roadmap`) cannot be
   named by an address that starts with that text, and a heading whose text starts with heading
-  marks cannot be named by a component that starts with that text, because Section 2.4 strips it
+  marks cannot be named by a component that starts with that text, because [section addresses](#section-addresses) strips it
   first.
 - A line copied from a result older than the file's revision names no section whose span has
   changed since.
 - The frontmatter cannot be named by an address; a copied `(frontmatter)` outline line names no
   section.
-- A heading whose text ends with ` (+<k> hidden)` cannot be named by an address that ends with that text, because Section 2.4 strips that suffix first.
+- A heading whose text ends with ` (+<k> hidden)` cannot be named by an address that ends with that text, because [section addresses](#section-addresses) strips that suffix first.
 - A heading whose text is `(preamble)` or `(document)` cannot be named by an address that is
   that text alone.
 - Two siblings whose components coincide, such as a heading written `X [2]` and the second of two
   headings `X`, match the same component and cannot be told apart by it.
 - Frontmatter in another form than `---` lines, such as TOML between `+++` lines, is parsed as
-  Markdown, and so is frontmatter that the host's resource parser accepts but Section 2.2 does
+  Markdown, and so is frontmatter that the host's resource parser accepts but [parsing](#parsing) does
   not, such as a line 1 of `----` or `---yaml`.
 - A file whose line 1 is a `---` thematic break and that has a later `---` line has everything
   between them taken as frontmatter, headings included.
@@ -815,22 +815,22 @@ padding and no background of its own.
 - A process that changes the file outside the host's file mutation queue between an `edit`
   call's read and its write is overwritten; the write is in place, so a crash during it can leave
   the file partly written.
-- Apart from parsing (Section 2.2), no bound is set on how soon an aborted call ends.
+- Apart from parsing ([parsing](#parsing)), no bound is set on how soon an aborted call ends.
 - The characters of a line beyond its first 50000 cannot be read by `read`.
 - A heading written as HTML (`<h2>`) is not a heading of the document.
 - Renumbering rewrites heading prefixes only: a reference to a number in body text, such as
   "Section 3.1", a link to a heading's anchor, in this file or another, and a number in a
   heading's text after its prefix are not updated.
-- Numbering that the prefix form of Section 5.4 does not cover — letters, roman numerals,
-  `Section 3`, `3)` — and a group that fails the conditions of Section 5.4 are not renumbered.
+- Numbering that the prefix form of [renumbering](#renumbering) does not cover — letters, roman numerals,
+  `Section 3`, `3)` — and a group that fails the conditions of [renumbering](#renumbering) are not renumbered.
 - A heading whose text starts with a number that is not a section number, such as
-  `2024 Roadmap`, cannot be told from a numbered heading; Section 5.4 treats it as numbered.
-- A heading such as `### 2 factor auth` is numbered by the form of Section 5.4, and is
+  `2024 Roadmap`, cannot be told from a numbered heading; [renumbering](#renumbering) treats it as numbered.
+- A heading such as `### 2 factor auth` is numbered by the form of [renumbering](#renumbering), and is
   renumbered when placed under a numbered parent whose other subsections are unnumbered.
 - Renumbering writes numbers without leading zeros, so a zero-padded group such as `## 01. Intro`
   loses its padding when first renumbered.
 - Footnotes, which neither [CommonMark] nor [GFM] specifies, are not parsed: `[^1]` with a `[^1]: <text>` line gives a
   `reference` item and uses that line as its link reference definition, and `[^1]` without one
   gives no item.
-- Whether the host, when it validates against the schema of Section 1.1, first coerces an
+- Whether the host, when it validates against the schema of [parameter schema](#parameters), first coerces an
   argument to the type the schema names is the host's.

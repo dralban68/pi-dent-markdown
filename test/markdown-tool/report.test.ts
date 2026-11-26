@@ -13,7 +13,7 @@ import {
 import { must } from "../support/must.ts";
 
 /**
- * specs/markdown-tool.md Section 5.5: the marks each operation leaves, the
+ * specs/markdown-tool.md specs/markdown-tool.md#edit-result: the marks each operation leaves, the
  * touched sections and their ancestors, the removed, renumbered, and skipped
  * blocks, and the `details` shape.
  */
@@ -67,7 +67,7 @@ async function edit(text: string, operations: Record<string, unknown>[]): Promis
   }
 }
 
-test("Section 5.5: a rename lists the touched section and its ancestors in document order", async () => {
+test("specs/markdown-tool.md#edit-result: a rename lists the touched section and its ancestors in document order", async () => {
   const outcome = await edit(DOCUMENT, [{ op: "rename", section: "One A", heading: "Renamed" }]);
   assert.equal(outcome.isError, false);
   assert.deepEqual(outcome.lines.slice(1), [
@@ -83,7 +83,7 @@ test("Section 5.5: a rename lists the touched section and its ancestors in docum
   assert.deepEqual(outcome.details.skipped, []);
 });
 
-test("Section 5.5: a delete marks the parent, and the words stay plural for one", async () => {
+test("specs/markdown-tool.md#edit-result: a delete marks the parent, and the words stay plural for one", async () => {
   const outcome = await edit(DOCUMENT, [{ op: "delete", section: "One A" }]);
   assert.equal(outcome.isError, false);
   assert.match(
@@ -101,7 +101,7 @@ test("Section 5.5: a delete marks the parent, and the words stay plural for one"
   ]);
 });
 
-test("Section 5.5: a delete of a section with no parent leaves no mark", async () => {
+test("specs/markdown-tool.md#edit-result: a delete of a section with no parent leaves no mark", async () => {
   const text = ["# A", "", "text", "", "# B", "", "text", ""].join("\n");
   const outcome = await edit(text, [{ op: "delete", section: "B" }]);
   assert.equal(outcome.isError, false);
@@ -116,7 +116,7 @@ test("Section 5.5: a delete of a section with no parent leaves no mark", async (
   ]);
 });
 
-test("Section 5.5: replace_body of (preamble) marks no line", async () => {
+test("specs/markdown-tool.md#edit-result: replace_body of (preamble) marks no line", async () => {
   const text = ["intro", "", "# A", "", "text", ""].join("\n");
   const outcome = await edit(text, [
     { op: "replace_body", section: "(preamble)", content: "new intro" },
@@ -126,7 +126,7 @@ test("Section 5.5: replace_body of (preamble) marks no line", async () => {
   assert.deepEqual(outcome.details.touched, []);
 });
 
-test("Section 5.5: replace and insert mark the heading line of the first heading they wrote", async () => {
+test("specs/markdown-tool.md#edit-result: replace and insert mark the heading line of the first heading they wrote", async () => {
   const replaced = await edit(DOCUMENT, [
     { op: "replace", section: "One A", content: "### New A\n\ntext new" },
   ]);
@@ -148,7 +148,7 @@ test("Section 5.5: replace and insert mark the heading line of the first heading
   ]);
 });
 
-test("Section 5.5: a mark stays with its line through later operations", async () => {
+test("specs/markdown-tool.md#edit-result: a mark stays with its line through later operations", async () => {
   const outcome = await edit(DOCUMENT, [
     { op: "delete", section: "One B" },
     { op: "rename", section: "One A", heading: "Renamed" },
@@ -164,7 +164,7 @@ test("Section 5.5: a mark stays with its line through later operations", async (
   );
 });
 
-test("Section 5.5: the removed block lists the headings in their order before the call", async () => {
+test("specs/markdown-tool.md#edit-result: the removed block lists the headings in their order before the call", async () => {
   const outcome = await edit(DOCUMENT, [
     { op: "delete", section: "One A" },
     { op: "delete", section: "One B" },
@@ -183,7 +183,7 @@ test("Section 5.5: the removed block lists the headings in their order before th
   ]);
 });
 
-test("Section 5.5: a deleted section's descendants are listed too, with their spans and subsections", async () => {
+test("specs/markdown-tool.md#edit-result: a deleted section's descendants are listed too, with their spans and subsections", async () => {
   const outcome = await edit(DOCUMENT, [{ op: "delete", section: "One" }]);
   assert.equal(outcome.isError, false);
   assert.deepEqual(outcome.lines.slice(-4), [
@@ -199,7 +199,7 @@ test("Section 5.5: a deleted section's descendants are listed too, with their sp
   ]);
 });
 
-test("Section 5.5: the renumbered block names the old and the new text", async () => {
+test("specs/markdown-tool.md#edit-result: the renumbered block names the old and the new text", async () => {
   const text = ["# Doc", "", "## 1. One", "", "text", "", "## 2. Two", "", "text", ""].join("\n");
   const outcome = await edit(text, [{ op: "delete", section: "1. One" }]);
   assert.equal(outcome.isError, false);
@@ -215,7 +215,7 @@ test("Section 5.5: the renumbered block names the old and the new text", async (
   ]);
 });
 
-test("Section 5.5: a section a replace rewrites is reported as removed even when the call writes its text again", async () => {
+test("specs/markdown-tool.md#edit-result: a section a replace rewrites is reported as removed even when the call writes its text again", async () => {
   const text = ["# Doc", "", "## One", "", "text", ""].join("\n");
   const outcome = await edit(text, [
     { op: "replace", section: "One", content: "## One\n\nnew text" },
@@ -232,7 +232,7 @@ test("Section 5.5: a section a replace rewrites is reported as removed even when
   ]);
 });
 
-test("Section 5.5: details carries the path, both revisions, changed, and the line count", async () => {
+test("specs/markdown-tool.md#edit-result: details carries the path, both revisions, changed, and the line count", async () => {
   const dir = tempDir();
   try {
     const name = write(dir, "a.md", DOCUMENT);
@@ -257,7 +257,7 @@ test("Section 5.5: details carries the path, both revisions, changed, and the li
   }
 });
 
-test("Section 5.5: an unchanged call keeps the revision it checked", async () => {
+test("specs/markdown-tool.md#edit-result: an unchanged call keeps the revision it checked", async () => {
   const outcome = await edit(DOCUMENT, [{ op: "rename", section: "Doc", heading: "Doc" }]);
   const revision = stringField(outcome.details, "revision");
   assert.equal(stringField(outcome.details, "previousRevision"), revision);
@@ -268,7 +268,7 @@ test("Section 5.5: an unchanged call keeps the revision it checked", async () =>
   assert.match(revision, /^[0-9a-f]{8}$/);
 });
 
-test("Section 5.5: set_level marks the heading line of the section it re-places", async () => {
+test("specs/markdown-tool.md#edit-result: set_level marks the heading line of the section it re-places", async () => {
   const outcome = await edit(DOCUMENT, [{ op: "set_level", section: "One", level: 3 }]);
   assert.equal(outcome.isError, false);
   assert.deepEqual(outcome.lines.slice(1), [
@@ -281,7 +281,7 @@ test("Section 5.5: set_level marks the heading line of the section it re-places"
   assert.deepEqual(outcome.details.removed, []);
 });
 
-test("Section 5.5: replace_body marks the heading line of its section", async () => {
+test("specs/markdown-tool.md#edit-result: replace_body marks the heading line of its section", async () => {
   const outcome = await edit(DOCUMENT, [
     { op: "replace_body", section: "One", content: "new body" },
   ]);
@@ -319,7 +319,7 @@ const LOG = [
   "",
 ].join("\n");
 
-test("Section 5.5: skipped groups are listed in document order of their parents, (document) first", async () => {
+test("specs/markdown-tool.md#edit-result: skipped groups are listed in document order of their parents, (document) first", async () => {
   const outcome = await edit(LOG, [
     { op: "insert", position: "last", at: "5 Notes", content: "## Later\n\nmore" },
     { op: "insert", position: "last", at: "2 Scope", content: "## Extra\n\nmore" },

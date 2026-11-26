@@ -6,7 +6,8 @@ import { bytesOf, call, cleanupRoots, revisionOf, runtime, tempDir, write } from
 import { must } from "../support/must.ts";
 
 /**
- * specs/markdown-tool.md Sections 5.1 to 5.3: every operation, the line rules,
+ * specs/markdown-tool.md#edit-applying, specs/markdown-tool.md#edit-line-rules, and
+ * specs/markdown-tool.md#edit-operations: every operation, the line rules,
  * the line-ending rule, atomic batches, the revision check, and the checks that
  * run after the addresses resolve.
  */
@@ -72,7 +73,7 @@ async function edit(
   }
 }
 
-test("Section 5.3: replace puts a fitted block in place of a section", async () => {
+test("specs/markdown-tool.md#edit-operations: replace puts a fitted block in place of a section", async () => {
   const outcome = await edit(DOCUMENT, [
     { op: "replace", section: "One A", content: "## New A\n\ntext new" },
   ]);
@@ -108,7 +109,7 @@ test("Section 5.3: replace puts a fitted block in place of a section", async () 
   );
 });
 
-test("Section 5.3: delete removes the span and the blank lines after it", async () => {
+test("specs/markdown-tool.md#edit-operations: delete removes the span and the blank lines after it", async () => {
   const outcome = await edit(DOCUMENT, [{ op: "delete", section: "One A" }]);
   assert.equal(outcome.isError, false);
   assert.equal(
@@ -134,13 +135,13 @@ test("Section 5.3: delete removes the span and the blank lines after it", async 
   );
 });
 
-test("Section 5.3: delete of a last section leaves no trailing blank line", async () => {
+test("specs/markdown-tool.md#edit-operations: delete of a last section leaves no trailing blank line", async () => {
   const text = ["# A", "", "one", "", "## B", "", "two", ""].join("\n");
   const outcome = await edit(text, [{ op: "delete", section: "B" }]);
   assert.equal(outcome.file, "# A\n\none\n");
 });
 
-test("Section 5.3: replace_body replaces, empties, and creates the own body", async () => {
+test("specs/markdown-tool.md#edit-operations: replace_body replaces, empties, and creates the own body", async () => {
   const replaced = await edit(DOCUMENT, [
     { op: "replace_body", section: "One", content: "new body" },
   ]);
@@ -199,7 +200,7 @@ test("Section 5.3: replace_body replaces, empties, and creates the own body", as
   assert.equal(bodyless.file, "# A\n\n## B\n\nnew\n\n### C\n\nx\n");
 });
 
-test("Section 5.3: replace_body of (preamble) replaces, removes, and places it", async () => {
+test("specs/markdown-tool.md#edit-operations: replace_body of (preamble) replaces, removes, and places it", async () => {
   const text = ["intro", "", "# A", "", "text", ""].join("\n");
   assert.equal(
     (await edit(text, [{ op: "replace_body", section: "(preamble)", content: "new intro" }])).file,
@@ -216,7 +217,7 @@ test("Section 5.3: replace_body of (preamble) replaces, removes, and places it",
   );
 });
 
-test("Section 5.3: insert places a block at each position", async () => {
+test("specs/markdown-tool.md#edit-operations: insert places a block at each position", async () => {
   const after = await edit(DOCUMENT, [
     { op: "insert", position: "after", at: "One A", content: "### Inserted\n\ntext i" },
   ]);
@@ -292,7 +293,7 @@ test("Section 5.3: insert places a block at each position", async () => {
   assert.equal(last.file.endsWith("body two\n\n## End\n\nlast\n"), true);
 });
 
-test("Section 5.3: move takes a section out and fits it to its new place", async () => {
+test("specs/markdown-tool.md#edit-operations: move takes a section out and fits it to its new place", async () => {
   const outcome = await edit(DOCUMENT, [
     { op: "move", section: "One A", position: "after", at: "Two" },
   ]);
@@ -323,7 +324,7 @@ test("Section 5.3: move takes a section out and fits it to its new place", async
   );
 });
 
-test("Section 5.3: rename keeps a number prefix unless the new text has one", async () => {
+test("specs/markdown-tool.md#edit-operations: rename keeps a number prefix unless the new text has one", async () => {
   assert.equal(
     (await edit(DOCUMENT, [{ op: "rename", section: "One A", heading: "Renamed" }])).file.includes(
       "\n### Renamed\n",
@@ -346,7 +347,7 @@ test("Section 5.3: rename keeps a number prefix unless the new text has one", as
   );
 });
 
-test("Section 5.3: rename of an ATX heading with no raw contents writes the opening sequence", async () => {
+test("specs/markdown-tool.md#edit-operations: rename of an ATX heading with no raw contents writes the opening sequence", async () => {
   const text = ["##", "", "text", ""].join("\n");
   assert.equal(
     (await edit(text, [{ op: "rename", section: "(untitled)", heading: "Named" }])).file,
@@ -354,7 +355,7 @@ test("Section 5.3: rename of an ATX heading with no raw contents writes the open
   );
 });
 
-test("Section 5.3: set_level shifts a section and its subsections", async () => {
+test("specs/markdown-tool.md#edit-operations: set_level shifts a section and its subsections", async () => {
   const outcome = await edit(DOCUMENT, [{ op: "set_level", section: "One", level: 3 }]);
   assert.equal(outcome.isError, false);
   assert.equal(
@@ -384,7 +385,7 @@ test("Section 5.3: set_level shifts a section and its subsections", async () => 
   );
 });
 
-test("Section 5.2: fitting a setext heading to a new level rewrites it as an ATX heading", async () => {
+test("specs/markdown-tool.md#edit-line-rules: fitting a setext heading to a new level rewrites it as an ATX heading", async () => {
   const text = ["Doc", "===", "", "Sub", "---", "", "text", ""].join("\n");
   const set = await edit(text, [{ op: "set_level", section: "Sub", level: 3 }]);
   assert.equal(set.isError, false);
@@ -396,7 +397,7 @@ test("Section 5.2: fitting a setext heading to a new level rewrites it as an ATX
   assert.equal(inserted.file, "## Doc\n\ntext\n\n### Sub\n\nmore\n");
 });
 
-test("Section 5.3: set_level is refused when another section would change parent", async () => {
+test("specs/markdown-tool.md#edit-operations: set_level is refused when another section would change parent", async () => {
   const text = ["# Doc", "", "## One", "", "### One A", "", "## Two", ""].join("\n");
   const outcome = await edit(text, [{ op: "set_level", section: "One A", level: 1 }]);
   assert.equal(outcome.isError, true);
@@ -406,7 +407,7 @@ test("Section 5.3: set_level is refused when another section would change parent
   );
 });
 
-test("Section 5.3: a move into itself, a level-6 destination, and a level above 6 are refused", async () => {
+test("specs/markdown-tool.md#edit-operations: a move into itself, a level-6 destination, and a level above 6 are refused", async () => {
   const inside = await edit(DOCUMENT, [
     { op: "move", section: "One", position: "after", at: "One A" },
   ]);
@@ -428,7 +429,7 @@ test("Section 5.3: a move into itself, a level-6 destination, and a level above 
   );
 });
 
-test("Section 5.3: a rename whose text cannot be written as heading text is refused", async () => {
+test("specs/markdown-tool.md#edit-operations: a rename whose text cannot be written as heading text is refused", async () => {
   const outcome = await edit(DOCUMENT, [{ op: "rename", section: "One A", heading: "a #" }]);
   assert.equal(outcome.isError, true);
   assert.equal(
@@ -437,7 +438,7 @@ test("Section 5.3: a rename whose text cannot be written as heading text is refu
   );
 });
 
-test("Section 5.3: a rename writes the prefix of a numbered heading into a refused text", async () => {
+test("specs/markdown-tool.md#edit-operations: a rename writes the prefix of a numbered heading into a refused text", async () => {
   const outcome = await edit("## 3. Foo\n\ntext\n", [
     { op: "rename", section: "3. Foo", heading: "Bar #" },
   ]);
@@ -448,7 +449,7 @@ test("Section 5.3: a rename writes the prefix of a numbered heading into a refus
   );
 });
 
-test("Section 5.3: an edit that would make the first lines frontmatter is refused", async () => {
+test("specs/markdown-tool.md#edit-operations: an edit that would make the first lines frontmatter is refused", async () => {
   const outcome = await edit(["intro", "", "# A", ""].join("\n"), [
     { op: "replace_body", section: "(preamble)", content: "---\n\n---" },
   ]);
@@ -456,7 +457,7 @@ test("Section 5.3: an edit that would make the first lines frontmatter is refuse
   assert.equal(outcome.text, "operations[0]: the edited text would make lines 1-3 frontmatter");
 });
 
-test("Section 5.3: content that would not parse as intended is refused", async () => {
+test("specs/markdown-tool.md#edit-operations: content that would not parse as intended is refused", async () => {
   const outcome = await edit(DOCUMENT, [
     { op: "insert", position: "after", at: "One A", content: "### New\n\n```\ntext" },
   ]);
@@ -467,7 +468,7 @@ test("Section 5.3: content that would not parse as intended is refused", async (
   );
 });
 
-test("Section 5.3: the parse refusal names the first heading that differs from the expected ones", async () => {
+test("specs/markdown-tool.md#edit-operations: the parse refusal names the first heading that differs from the expected ones", async () => {
   const text = ["# A", "", "## B", "", "text </pre> here", "", "## C", ""].join("\n");
   const outcome = await edit(text, [
     { op: "insert", position: "before", at: "B", content: "## New\n\n<pre>" },
@@ -479,7 +480,7 @@ test("Section 5.3: the parse refusal names the first heading that differs from t
   );
 });
 
-test("Section 5.1: a batch whose later operation fails writes nothing", async () => {
+test("specs/markdown-tool.md#edit-applying: a batch whose later operation fails writes nothing", async () => {
   let writes = 0;
   const outcome = await edit(
     DOCUMENT,
@@ -501,7 +502,7 @@ test("Section 5.1: a batch whose later operation fails writes nothing", async ()
   assert.equal(writes, 0);
 });
 
-test("Section 5.1: an unchanged call writes nothing and says so", async () => {
+test("specs/markdown-tool.md#edit-applying: an unchanged call writes nothing and says so", async () => {
   let writes = 0;
   const outcome = await edit(DOCUMENT, [{ op: "rename", section: "Doc", heading: "Doc" }], {
     write: () => {
@@ -516,7 +517,7 @@ test("Section 5.1: an unchanged call writes nothing and says so", async () => {
   assert.equal(outcome.details.previousRevision, revision);
 });
 
-test("Section 5.1: lines outside the touched ones keep their bytes, and endings stay per line", async () => {
+test("specs/markdown-tool.md#edit-applying: lines outside the touched ones keep their bytes, and endings stay per line", async () => {
   const text = [
     "# Doc\r\n",
     "\r\n",
@@ -545,7 +546,7 @@ test("Section 5.1: lines outside the touched ones keep their bytes, and endings 
   );
 });
 
-test("Section 5.1: content lines take the file's first line ending, and moved lines keep their own", async () => {
+test("specs/markdown-tool.md#edit-applying: content lines take the file's first line ending, and moved lines keep their own", async () => {
   const text = [
     "# Doc\r\n",
     "\r\n",
@@ -583,7 +584,7 @@ test("Section 5.1: content lines take the file's first line ending, and moved li
   assert.equal(moved.file.endsWith("## Two\r\n\nbody two\r\n\r\n## One\n\nbody one\n"), true);
 });
 
-test("Section 5.1: the last line's ending follows the file, and a former last line gains one", async () => {
+test("specs/markdown-tool.md#edit-applying: the last line's ending follows the file, and a former last line gains one", async () => {
   const text = "# A\n\ntext";
   const appended = await edit(text, [
     { op: "insert", position: "last", at: "(document)", content: "## B\n\nb" },
@@ -593,12 +594,12 @@ test("Section 5.1: the last line's ending follows the file, and a former last li
   assert.equal(removed.file, "# A");
 });
 
-test("Section 5.1: an edit keeps a leading U+FEFF", async () => {
+test("specs/markdown-tool.md#edit-applying: an edit keeps a leading U+FEFF", async () => {
   const outcome = await edit("\uFEFF# A\n\ntext\n", [{ op: "rename", section: "A", heading: "B" }]);
   assert.equal(outcome.file, "\uFEFF# B\n\ntext\n");
 });
 
-test("Section 5.1: a write failure is a tool error with the code", async () => {
+test("specs/markdown-tool.md#edit-applying: a write failure is a tool error with the code", async () => {
   const outcome = await edit(DOCUMENT, [{ op: "rename", section: "Doc", heading: "Title" }], {
     write: () => {
       const error = new Error("denied");
@@ -610,7 +611,7 @@ test("Section 5.1: a write failure is a tool error with the code", async () => {
   assert.equal(outcome.text, "cannot write a.md: EACCES");
 });
 
-test("Section 5.1: a later operation sees the text the earlier ones left", async () => {
+test("specs/markdown-tool.md#edit-applying: a later operation sees the text the earlier ones left", async () => {
   const outcome = await edit(DOCUMENT, [
     { op: "rename", section: "Two", heading: "Second" },
     { op: "delete", section: "Second" },
@@ -621,7 +622,7 @@ test("Section 5.1: a later operation sees the text the earlier ones left", async
 
 const SHIFT = ["# A", "", "## Dup", "", "old", "", "# B", "", "text", ""].join("\n");
 
-test("Section 2.4: a line range names the section as it was before the call, after an earlier operation shifted its lines", async () => {
+test("specs/markdown-tool.md#section-addresses: a line range names the section as it was before the call, after an earlier operation shifted its lines", async () => {
   const outcome = await edit(SHIFT, [
     { op: "insert", at: "Dup", position: "before", content: "## New\n\nnew" },
     { op: "delete", section: "3-5 Dup" },
@@ -640,7 +641,7 @@ test("Section 2.4: a line range names the section as it was before the call, aft
   );
 });
 
-test("Section 2.4: a line range with a trailing ` [<n>]` resolves after an earlier operation deleted the first sibling", async () => {
+test("specs/markdown-tool.md#section-addresses: a line range with a trailing ` [<n>]` resolves after an earlier operation deleted the first sibling", async () => {
   const text = ["# Doc", "", "## X", "", "first", "", "## X", "", "second", ""].join("\n");
   const outcome = await edit(text, [
     { op: "delete", section: "3-5 X" },
@@ -652,7 +653,7 @@ test("Section 2.4: a line range with a trailing ` [<n>]` resolves after an earli
   assert.equal(outcome.file.includes("second"), false);
 });
 
-test("Section 2.4: a line range is exempt from the renumbering collision that refuses its unranged form", async () => {
+test("specs/markdown-tool.md#section-addresses: a line range is exempt from the renumbering collision that refuses its unranged form", async () => {
   const text = [
     "# Spec",
     "",
@@ -697,7 +698,7 @@ test("Section 2.4: a line range is exempt from the renumbering collision that re
   );
 });
 
-test("Section 2.4: a section named twice by renumbering reports the last operation that named it", async () => {
+test("specs/markdown-tool.md#section-addresses: a section named twice by renumbering reports the last operation that named it", async () => {
   const text = [
     "# Spec",
     "",
@@ -728,7 +729,7 @@ test("Section 2.4: a section named twice by renumbering reports the last operati
   );
 });
 
-test("Section 2.4: a line range names a section the call wrote, as (new), in the error", async () => {
+test("specs/markdown-tool.md#section-addresses: a line range names a section the call wrote, as (new), in the error", async () => {
   const text = ["# A", "", "## Dup", "", "old", "", "# B", "", "text", ""].join("\n");
   const outcome = await edit(text, [
     { op: "insert", at: "B", position: "last", content: "## Dup\n\nnew" },
@@ -742,7 +743,7 @@ test("Section 2.4: a line range names a section the call wrote, as (new), in the
   assert.equal(outcome.file, text);
 });
 
-test("Section 2.4: (document) with a stripped marker is the end of the text for insert last", async () => {
+test("specs/markdown-tool.md#section-addresses: (document) with a stripped marker is the end of the text for insert last", async () => {
   const expected = `${DOCUMENT}\n# B\n\nb\n`;
   for (const at of ["* (document)", "1-3 (document)"]) {
     const outcome = await edit(DOCUMENT, [
@@ -753,7 +754,7 @@ test("Section 2.4: (document) with a stripped marker is the end of the text for 
   }
 });
 
-test("Section 5.5: the revision is the first eight hex digits of the SHA-256 of the written bytes", async () => {
+test("specs/markdown-tool.md#edit-result: the revision is the first eight hex digits of the SHA-256 of the written bytes", async () => {
   const outcome = await edit(DOCUMENT, [{ op: "rename", section: "Doc", heading: "Title" }]);
   assert.equal(outcome.isError, false);
   const digest = createHash("sha256").update(outcome.file).digest("hex").slice(0, 8);
@@ -761,7 +762,7 @@ test("Section 5.5: the revision is the first eight hex digits of the SHA-256 of 
   assert.equal(outcome.lines[0], `Edited a.md: 1 operations · 19 lines · revision ${digest}`);
 });
 
-test("Section 2.4: (preamble) with a line range is replaced as the preamble in edit", async () => {
+test("specs/markdown-tool.md#section-addresses: (preamble) with a line range is replaced as the preamble in edit", async () => {
   const text = ["intro", "", "# A", "", "text", ""].join("\n");
   const outcome = await edit(text, [
     { op: "replace_body", section: "9-9 (preamble)", content: "new intro" },

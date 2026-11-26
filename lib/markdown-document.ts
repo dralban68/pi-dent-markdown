@@ -1,7 +1,7 @@
 /**
  * The Markdown document model of specs/markdown-tool.md: the file's bytes and
- * text (Section 2.1), the parse (Section 2.2), the sections (Section 2.3), and
- * the section addresses (Section 2.4).
+ * text (specs/markdown-tool.md#file-access), the parse (specs/markdown-tool.md#parsing), the sections (specs/markdown-tool.md#sections), and
+ * the section addresses (specs/markdown-tool.md#section-addresses).
  *
  * `mdast-util-from-markdown` with the GFM table extension answers which lines
  * are headings and at what level (CommonMark 0.31.2 with the tables extension,
@@ -16,25 +16,25 @@ import { fromMarkdown } from "mdast-util-from-markdown";
 import { gfmTable } from "micromark-extension-gfm-table";
 import { gfmTableFromMarkdown } from "mdast-util-gfm-table";
 
-/** The greatest file size the tool reads, in bytes (Section 2.1). */
+/** The greatest file size the tool reads, in bytes (specs/markdown-tool.md#file-access). */
 export const MARKDOWN_MAX_BYTES = 4194304;
 
-/** The separator of Section 2.4: a space, `>`, and a space. */
+/** The separator of specs/markdown-tool.md#section-addresses: a space, `>`, and a space. */
 export const ADDRESS_SEPARATOR = " > ";
 
-/** One line of a text: its characters and its line ending, which is empty at the end of a text (Section 2.1). */
+/** One line of a text: its characters and its line ending, which is empty at the end of a text (specs/markdown-tool.md#file-access). */
 export interface TextLine {
   text: string;
   ending: string;
 }
 
-/** A range of file lines, both ends included, numbered from 1 (Sections 2.2 and 2.3). */
+/** A range of file lines, both ends included, numbered from 1 (#parsing, #sections). */
 export interface LineRange {
   start: number;
   end: number;
 }
 
-/** True for a blank line: only spaces and tabs, or nothing (Section 2.1). */
+/** True for a blank line: only spaces and tabs, or nothing (specs/markdown-tool.md#file-access). */
 export function isBlank(text: string): boolean {
   for (const character of text) {
     if (character !== " " && character !== "\t") return false;
@@ -45,7 +45,7 @@ export function isBlank(text: string): boolean {
 /**
  * Split a text into its lines at line endings: a line feed, a carriage return
  * not followed by a line feed, or a carriage return followed by a line feed
- * (Section 2.1). A line ending at the end of the text starts no further line.
+ * (specs/markdown-tool.md#file-access). A line ending at the end of the text starts no further line.
  */
 export function splitLines(text: string): TextLine[] {
   const lines: TextLine[] = [];
@@ -79,7 +79,7 @@ export function joinLines(lines: readonly TextLine[]): string {
   return text;
 }
 
-/** A decoded Markdown text and whether a leading U+FEFF was removed (Section 2.1). */
+/** A decoded Markdown text and whether a leading U+FEFF was removed (specs/markdown-tool.md#file-access). */
 export interface DecodedText {
   text: string;
   hadBom: boolean;
@@ -90,7 +90,7 @@ const DECODER = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
 /**
  * The text of a file's bytes decoded as UTF-8, without a leading U+FEFF, or
  * undefined when the bytes are not valid UTF-8 or the decoded text holds U+0000
- * (Section 2.1).
+ * (specs/markdown-tool.md#file-access).
  */
 export function decodeMarkdown(bytes: Uint8Array): DecodedText | undefined {
   let text: string;
@@ -104,7 +104,7 @@ export function decodeMarkdown(bytes: Uint8Array): DecodedText | undefined {
   return { text: hadBom ? text.slice(1) : text, hadBom };
 }
 
-/** A file's revision: the first 8 lowercase hexadecimal digits of the SHA-256 digest of its bytes (Section 2.1). */
+/** A file's revision: the first 8 lowercase hexadecimal digits of the SHA-256 digest of its bytes (specs/markdown-tool.md#file-access). */
 export function revisionOf(bytes: Uint8Array): string {
   return createHash("sha256").update(bytes).digest("hex").slice(0, 8);
 }
@@ -113,25 +113,25 @@ export function revisionOf(bytes: Uint8Array): string {
 export const REVISION = /^[0-9a-f]{8}$/;
 
 // ---------------------------------------------------------------------------
-// Section 2.2: parsing
+// specs/markdown-tool.md#parsing: parsing
 // ---------------------------------------------------------------------------
 
-/** The parse time one call may spend, in milliseconds (Section 2.2). */
+/** The parse time one call may spend, in milliseconds (specs/markdown-tool.md#parsing). */
 export const PARSE_BUDGET_MS = 10000;
 
-/** The parse time a call has spent, and the most it may spend (Section 2.2). */
+/** The parse time a call has spent, and the most it may spend (specs/markdown-tool.md#parsing). */
 export interface ParseClock {
   spentMs: number;
   limitMs: number;
 }
 
-/** Raised when the parses of a call reach its budget (Section 2.2). */
+/** Raised when the parses of a call reach its budget (specs/markdown-tool.md#parsing). */
 export class ParseBudgetError extends Error {}
 
 /** The clock the parses of the running call are charged to, or undefined outside a call. */
 let activeClock: ParseClock | undefined;
 
-/** Run `body` with `clock` charged for every parse it makes (Section 2.2). */
+/** Run `body` with `clock` charged for every parse it makes (specs/markdown-tool.md#parsing). */
 export function withParseClock<T>(clock: ParseClock, body: () => T): T {
   const previous = activeClock;
   activeClock = clock;
@@ -142,7 +142,7 @@ export function withParseClock<T>(clock: ParseClock, body: () => T): T {
   }
 }
 
-/** Charge a parse's time to the active clock, raising when the budget is reached (Section 2.2). */
+/** Charge a parse's time to the active clock, raising when the budget is reached (specs/markdown-tool.md#parsing). */
 function chargeParse(milliseconds: number): void {
   if (activeClock === undefined) return;
   activeClock.spentMs += milliseconds;
@@ -151,7 +151,7 @@ function chargeParse(milliseconds: number): void {
   }
 }
 
-/** A heading of the document, on the file's line numbers (Section 2.2). */
+/** A heading of the document, on the file's line numbers (specs/markdown-tool.md#parsing). */
 export interface HeadingInfo {
   level: number;
   /** Its heading line: the first of its lines. */
@@ -170,7 +170,7 @@ export interface HeadingInfo {
   contentEnd: number;
 }
 
-/** The opening sequence of an ATX heading, up to and including the spaces or tabs after it (Section 4.2). */
+/** The opening sequence of an ATX heading, up to and including the spaces or tabs after it ([CommonMark], Section 4.2). */
 const ATX_OPENING = /^( {0,3})(#{1,6})(?:[ \t]+|$)/;
 
 /** A whole ATX heading line's remainder that is a closing sequence. */
@@ -179,7 +179,7 @@ const ATX_CLOSING_ONLY = /^[ \t]*#+[ \t]*$/;
 /** A closing sequence at the end of an ATX heading line's remainder. */
 const ATX_CLOSING_TAIL = /[ \t]+#+[ \t]*$/;
 
-/** The frontmatter line of Section 2.2: `---` followed by nothing but spaces and tabs. */
+/** The frontmatter line of specs/markdown-tool.md#parsing: `---` followed by nothing but spaces and tabs. */
 const FRONTMATTER_LINE = /^---[ \t]*$/;
 
 interface AtxParts {
@@ -192,7 +192,7 @@ interface AtxParts {
 /**
  * The parts of an ATX heading line, or undefined when the line opens no heading:
  * the opening sequence, then the raw contents, then an optional closing sequence
- * (CommonMark Section 4.2). The raw contents end before trailing spaces and tabs.
+ * ([CommonMark], Section 4.2). The raw contents end before trailing spaces and tabs.
  */
 function atxParts(line: string): AtxParts | undefined {
   const opening = ATX_OPENING.exec(line);
@@ -214,7 +214,7 @@ function atxParts(line: string): AtxParts | undefined {
   return { level: hashes.length, openStart, contentStart, contentEnd };
 }
 
-/** A heading line without its leading and trailing spaces and tabs (Section 2.2). */
+/** A heading line without its leading and trailing spaces and tabs (specs/markdown-tool.md#parsing). */
 function trimmed(text: string): string {
   let start = 0;
   let end = text.length;
@@ -232,8 +232,8 @@ function trimmed(text: string): string {
 }
 
 /**
- * The headings of a text parsed as a document is (Section 2.2): CommonMark
- * 0.31.2 with the tables extension of GFM Section 4.10 and no other extension,
+ * The headings of a text parsed as a document is (specs/markdown-tool.md#parsing): CommonMark
+ * 0.31.2 with the tables extension of [GFM], Section 4.10, and no other extension,
  * keeping only headings whose parent block is the document. No frontmatter is
  * recognized. Lines are numbered from 1.
  */
@@ -291,7 +291,7 @@ export function parseHeadings(lines: readonly string[]): HeadingInfo[] {
   return headings;
 }
 
-/** The frontmatter this tool detects: line 1 through the first later `---` line (Section 2.2). */
+/** The frontmatter this tool detects: line 1 through the first later `---` line (specs/markdown-tool.md#parsing). */
 export function detectFrontmatter(lines: readonly TextLine[]): LineRange | undefined {
   const first = lines[0];
   if (first === undefined || !FRONTMATTER_LINE.test(first.text)) return;
@@ -304,10 +304,10 @@ export function detectFrontmatter(lines: readonly TextLine[]): LineRange | undef
 }
 
 // ---------------------------------------------------------------------------
-// Section 2.3: sections
+// specs/markdown-tool.md#sections: sections
 // ---------------------------------------------------------------------------
 
-/** A section of the document, on the file's line numbers (Section 2.3). */
+/** A section of the document, on the file's line numbers (specs/markdown-tool.md#sections). */
 export interface DocSection {
   /** Its place in document order, counting from 0. */
   index: number;
@@ -328,13 +328,13 @@ export interface DocSection {
   /** Its own body: the first and last line, or absent when it is empty. */
   bodyStart: number | undefined;
   bodyEnd: number | undefined;
-  /** Its component of Section 2.4, with the ` [<n>]` suffix when its text is not unique among its siblings. */
+  /** Its component of specs/markdown-tool.md#section-addresses, with the ` [<n>]` suffix when its text is not unique among its siblings. */
   component: string;
-  /** Its full address of Section 2.4. */
+  /** Its full address of specs/markdown-tool.md#section-addresses. */
   address: string;
 }
 
-/** A parsed document: its frontmatter, its preamble, and its sections (Sections 2.2 and 2.3). */
+/** A parsed document: its frontmatter, its preamble, and its sections (#parsing, #sections). */
 export interface DocModel {
   frontmatter: LineRange | undefined;
   /** The lines before the first heading; not a section. */
@@ -369,7 +369,7 @@ function firstNonBlank(lines: readonly TextLine[], from: number, to: number): nu
 }
 
 /**
- * The document of a file's lines (Sections 2.2 and 2.3): the frontmatter is
+ * The document of a file's lines (#parsing, #sections): the frontmatter is
  * detected and left out, the rest is parsed, and each heading of the document
  * starts one section.
  */
@@ -460,7 +460,7 @@ export function analyzeDocument(lines: readonly TextLine[]): DocModel {
   return { frontmatter, preamble, sections, lineCount: lines.length, headingLines };
 }
 
-/** The components and full addresses of Section 2.4, in document order. */
+/** The components and full addresses of specs/markdown-tool.md#section-addresses, in document order. */
 function assignAddresses(sections: DocSection[]): void {
   const seen = new Map<string, number>();
   for (const section of sections) {
@@ -501,10 +501,10 @@ export function isWithin(model: DocModel, index: number, ancestor: number): bool
 }
 
 // ---------------------------------------------------------------------------
-// Section 5.4: number prefixes
+// specs/markdown-tool.md#renumbering: number prefixes
 // ---------------------------------------------------------------------------
 
-/** A number prefix of Section 5.4 and the number it denotes. */
+/** A number prefix of specs/markdown-tool.md#renumbering and the number it denotes. */
 export interface NumberPrefix {
   /** The digits and dots, with the trailing dot when there is one. */
   prefix: string;
@@ -517,13 +517,13 @@ export interface NumberPrefix {
 }
 
 /**
- * The number prefix a heading text starts with (Section 5.4): one or more runs
+ * The number prefix a heading text starts with (specs/markdown-tool.md#renumbering): one or more runs
  * of digits joined by single dots, an optional trailing dot, at least one space
  * or tab, and then another character.
  */
 const NUMBER_PREFIX = /^([0-9]+(?:\.[0-9]+)*)(\.?)([ \t]+)(?=[\s\S])/;
 
-/** The number prefix a heading text starts with, or undefined when it is not numbered (Section 5.4). */
+/** The number prefix a heading text starts with, or undefined when it is not numbered (specs/markdown-tool.md#renumbering). */
 export function parseNumberPrefix(text: string): NumberPrefix | undefined {
   const match = NUMBER_PREFIX.exec(text);
   if (match === null) return;
@@ -539,14 +539,14 @@ export function parseNumberPrefix(text: string): NumberPrefix | undefined {
   };
 }
 
-/** A heading text without a leading number prefix (Section 5.4). */
+/** A heading text without a leading number prefix (specs/markdown-tool.md#renumbering). */
 export function withoutNumberPrefix(text: string): string {
   const number = parseNumberPrefix(text);
   return number === undefined ? text : text.slice(number.length);
 }
 
 // ---------------------------------------------------------------------------
-// Section 2.4: section addresses
+// specs/markdown-tool.md#section-addresses: section addresses
 // ---------------------------------------------------------------------------
 
 /** True when two number sequences are equal component by component. */
@@ -559,7 +559,7 @@ export function sameComponents(left: readonly number[], right: readonly number[]
 }
 
 /**
- * The number a number component names (Section 2.4): an optional `Section ` or
+ * The number a number component names (specs/markdown-tool.md#section-addresses): an optional `Section ` or
  * `§`, zero or more spaces and tabs, digit runs joined by single dots, and an
  * optional trailing dot, and nothing else.
  */
@@ -573,7 +573,7 @@ export function numberOfComponent(component: string): number[] | undefined {
 }
 
 /**
- * The value of a section address after stripping (Section 2.4): trimmed, then
+ * The value of a section address after stripping (specs/markdown-tool.md#section-addresses): trimmed, then
  * stripped, in this order and each at most once, of a leading `* `, a leading
  * line range `<a>-<b> `, and a trailing ` (+<k> hidden)`.
  */
@@ -581,19 +581,19 @@ export function stripAddress(value: string): string {
   return parseAddress(value).text;
 }
 
-/** A line range `<a>-<b>` of an address, as integers (Section 2.4). */
+/** A line range `<a>-<b>` of an address, as integers (specs/markdown-tool.md#section-addresses). */
 export interface LineSpan {
   start: number;
   end: number;
 }
 
-/** The reference span of a section, by section index, or undefined when it has none (Section 2.4). */
+/** The reference span of a section, by section index, or undefined when it has none (specs/markdown-tool.md#section-addresses). */
 export type SpanOf = (index: number) => LineSpan | undefined;
 
-/** The ` [<n>]` suffix of a component, removed when an address has a line range (Section 2.4). */
+/** The ` [<n>]` suffix of a component, removed when an address has a line range (specs/markdown-tool.md#section-addresses). */
 const COUNT_SUFFIX = / \[[0-9]+\]$/;
 
-/** An address after stripping and splitting (Section 2.4). */
+/** An address after stripping and splitting (specs/markdown-tool.md#section-addresses). */
 export interface ParsedAddress {
   /** The value, trimmed. */
   trimmed: string;
@@ -605,7 +605,7 @@ export interface ParsedAddress {
   components: string[];
 }
 
-/** Parse an address value (Section 2.4). */
+/** Parse an address value (specs/markdown-tool.md#section-addresses). */
 export function parseAddress(value: string): ParsedAddress {
   const whole = value.trim();
   let text = whole.replace(/^\* /, "");
@@ -622,7 +622,7 @@ export function parseAddress(value: string): ParsedAddress {
   return { trimmed: whole, text, range, components };
 }
 
-/** The value without its line range, the rest as given (Section 2.4). */
+/** The value without its line range, the rest as given (specs/markdown-tool.md#section-addresses). */
 export function withoutLineRange(value: string): string {
   return value.trim().replace(/^(\* )?[0-9]+-[0-9]+ /, "$1");
 }
@@ -635,7 +635,7 @@ function ownSpan(model: DocModel): SpanOf {
   };
 }
 
-/** A component after normalization of step 2 (Section 2.4). */
+/** A component after normalization of step 2 (specs/markdown-tool.md#section-addresses). */
 export function normalizeComponent(text: string): string {
   const stripped = text.replace(/[`*_]/g, "");
   let collapsed = "";
@@ -652,7 +652,7 @@ export function normalizeComponent(text: string): string {
   return collapsed.toLowerCase();
 }
 
-/** What one address names (Section 2.4). */
+/** What one address names (specs/markdown-tool.md#section-addresses). */
 export interface AddressOutcome {
   /** The section the address names, when exactly one matches. */
   section: number | undefined;
@@ -662,11 +662,11 @@ export interface AddressOutcome {
   step: MatchStep | undefined;
 }
 
-/** The steps of Section 2.4 that match a component. */
+/** The steps of specs/markdown-tool.md#section-addresses that match a component. */
 export type MatchStep = 1 | 2 | 3 | 4;
 
 /**
- * True when a section's component matches a component at `step` (Section 2.4).
+ * True when a section's component matches a component at `step` (specs/markdown-tool.md#section-addresses).
  * With a line range (`ranged`), the section's own component loses its ` [<n>]`.
  */
 function componentMatches(
@@ -689,7 +689,7 @@ function componentMatches(
   return own !== undefined && sameComponents(own.components, number);
 }
 
-/** True when every component matches an ancestor, in order but not necessarily consecutively (Section 2.4). */
+/** True when every component matches an ancestor, in order but not necessarily consecutively (specs/markdown-tool.md#section-addresses). */
 function ancestorsMatch(
   model: DocModel,
   index: number,
@@ -714,7 +714,7 @@ function ancestorsMatch(
 }
 
 /**
- * The sections an address names, in the three steps of Section 2.4: the first
+ * The sections an address names, in the three steps of specs/markdown-tool.md#section-addresses: the first
  * step that matches any section decides. `(preamble)` and `(document)` are not
  * addresses here; a caller handles them first.
  */
@@ -747,7 +747,7 @@ export function matchAddress(
   return { section: undefined, matches: [], step: undefined };
 }
 
-/** The full addresses of the first 5 sections similar to an address (Section 2.4). */
+/** The full addresses of the first 5 sections similar to an address (specs/markdown-tool.md#section-addresses). */
 export function similarAddresses(model: DocModel, value: string): string[] {
   const parts = parseAddress(value).components;
   const last = normalizeComponent(parts[parts.length - 1] ?? "");
@@ -761,7 +761,7 @@ export function similarAddresses(model: DocModel, value: string): string[] {
 }
 
 /**
- * The sections an address names, with the errors of Section 2.4 when it names
+ * The sections an address names, with the errors of specs/markdown-tool.md#section-addresses when it names
  * none or several. The error of a line range that spans no section lists the
  * sections the address without its range matches.
  */
@@ -788,7 +788,7 @@ export function resolveAddress(
   return { error: noSectionMessage(model, shown, path) };
 }
 
-/** The error text of an address with a line range that spans no section (Section 2.4). */
+/** The error text of an address with a line range that spans no section (specs/markdown-tool.md#section-addresses). */
 function rangedMessage(
   model: DocModel,
   value: string,
@@ -810,7 +810,7 @@ function rangedMessage(
   return `no section "${value}" in ${path} spans that line range; without it the address matches: ${shown.join("; ")}. Run outline for current line ranges.`;
 }
 
-/** The error text of an address no section matches (Section 2.4). */
+/** The error text of an address no section matches (specs/markdown-tool.md#section-addresses). */
 export function noSectionMessage(model: DocModel, value: string, path: string): string {
   const similar = similarAddresses(model, value);
   if (similar.length > 0) {
@@ -819,7 +819,7 @@ export function noSectionMessage(model: DocModel, value: string, path: string): 
   return `no section "${value}" in ${path}. Run outline to list its sections.`;
 }
 
-/** The error text of an address several sections match (Section 2.4). */
+/** The error text of an address several sections match (specs/markdown-tool.md#section-addresses). */
 export function ambiguousMessage(
   model: DocModel,
   value: string,

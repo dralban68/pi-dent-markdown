@@ -32,19 +32,19 @@ function repoBytes(relative: string): Buffer {
   return readFileSync(join(process.cwd(), relative));
 }
 
-/** The lines of a text (Section 2.1): line endings end lines, and a final one starts none. */
+/** The lines of a text (specs/markdown-tool.md#file-access): line endings end lines, and a final one starts none. */
 function linesOf(text: string): string[] {
   const lines = text.split(/\r?\n/);
   if (lines[lines.length - 1] === "") lines.pop();
   return lines;
 }
 
-/** The last component of a full address (Section 2.4). */
+/** The last component of a full address (specs/markdown-tool.md#section-addresses). */
 function componentOf(address: string): string {
   return must(address.split(" > ").at(-1));
 }
 
-/** One entry of an outline (Section 3). */
+/** One entry of an outline (specs/markdown-tool.md#action-outline). */
 interface Entry {
   address: string;
   level: number;
@@ -99,7 +99,7 @@ function descendantsOf(entries: Entry[], entry: Entry): Entry[] {
   return entries.filter((other) => other.address.startsWith(`${entry.address} > `));
 }
 
-/** Whether a line is a heading line of an entry's marks and text (Section 2.2). */
+/** Whether a line is a heading line of an entry's marks and text (specs/markdown-tool.md#parsing). */
 function isHeadingLine(lines: string[], entry: Entry): boolean {
   const first = lines[entry.start - 1] ?? "";
   const atx = /^ {0,3}(#{1,6})(?=[ \t]|$)/.exec(first);

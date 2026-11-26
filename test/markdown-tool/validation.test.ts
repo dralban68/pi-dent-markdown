@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { call, cleanupRoots, revisionOf, runtime, tempDir, write } from "./support.ts";
 
 /**
- * specs/markdown-tool.md Section 1.3: every execution-time check, in its order,
+ * specs/markdown-tool.md specs/markdown-tool.md#validation: every execution-time check, in its order,
  * with its exact error text, reported before the file is read. Each call goes
  * through the tool; the file named is missing, so any text but the check's own
  * would show the check did not run first.
@@ -483,12 +483,12 @@ const cases: Case[] = [
 ];
 
 for (const one of cases) {
-  test(`Section 1.3: ${one.name}`, async () => {
+  test(`specs/markdown-tool.md#validation: ${one.name}`, async () => {
     assert.equal(await errorOf(one.params), one.error);
   });
 }
 
-test("Section 1.3: non-breaking space before marker text is accepted as content", async () => {
+test("specs/markdown-tool.md#validation: non-breaking space before marker text is accepted as content", async () => {
   const dir = tempDir();
   try {
     write(dir, "a.md", "# A\n\nold\n");
@@ -505,7 +505,7 @@ test("Section 1.3: non-breaking space before marker text is accepted as content"
   }
 });
 
-test("Section 1.3: operations that hold no operation or too many are rejected", async () => {
+test("specs/markdown-tool.md#validation: operations that hold no operation or too many are rejected", async () => {
   for (const operations of [
     [],
     "x",
@@ -519,7 +519,7 @@ test("Section 1.3: operations that hold no operation or too many are rejected", 
   }
 });
 
-test("Section 1.3: the checks of the call run before those of its operations", async () => {
+test("specs/markdown-tool.md#validation: the checks of the call run before those of its operations", async () => {
   assert.equal(
     await errorOf({
       action: "edit",
@@ -531,7 +531,7 @@ test("Section 1.3: the checks of the call run before those of its operations", a
   );
 });
 
-test("Section 1.3: the first failing operation is reported, not a later one", async () => {
+test("specs/markdown-tool.md#validation: the first failing operation is reported, not a later one", async () => {
   assert.equal(
     await errorOf({
       action: "edit",
@@ -546,7 +546,7 @@ test("Section 1.3: the first failing operation is reported, not a later one", as
   );
 });
 
-test("Section 1.3: a call is rejected before the file is read", async () => {
+test("specs/markdown-tool.md#validation: a call is rejected before the file is read", async () => {
   const dir = tempDir();
   try {
     writeFileSync(join(dir, "a.md"), Buffer.from([0xff, 0xfe, 0x00]));
@@ -562,7 +562,7 @@ test("Section 1.3: a call is rejected before the file is read", async () => {
   }
 });
 
-test("Section 1.3: a valid call of each action passes the checks", async () => {
+test("specs/markdown-tool.md#validation: a valid call of each action passes the checks", async () => {
   const dir = tempDir();
   try {
     const instance = runtime();
