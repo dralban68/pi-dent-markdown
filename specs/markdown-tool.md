@@ -210,7 +210,7 @@ shows it.
 The file's text is its bytes decoded as UTF-8, without a leading U+FEFF, which is not part of
 line 1 and which an `edit` call keeps. A line ending is a line feed, a carriage return not
 followed by a line feed, or a carriage return followed by a line feed ([CommonMark],
-[file access](#file-access)). The text is split into lines at line endings; a line ending ends its line, and a
+Section 2.1). The text is split into lines at line endings; a line ending ends its line, and a
 line ending at the end of the text starts no further line. Lines are numbered from 1; the
 file's line count is the number of lines, `0` for an empty text. A blank line is a line holding
 only spaces and tabs, or nothing ([CommonMark], Section 2.1).
