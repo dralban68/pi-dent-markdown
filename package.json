@@ -17,9 +17,11 @@
     "url": "git+https://github.com/dralban68/pi-dent-markdown.git"
   },
   "files": [
+    "docs/",
     "extension.ts",
     "index.ts",
-    "lib/"
+    "lib/",
+    "specs/markdown-tool.md"
   ],
   "type": "module",
   "main": "./index.ts",
