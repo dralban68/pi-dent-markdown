@@ -35,8 +35,10 @@ listing; 2000 lines per read. Changing words inside a section stays with the hos
 
 ## Using it
 
-pi-dent bundles it: installing pi-dent registers the `Markdown` tool in every run mode. Standalone,
-an extension registers it itself:
+pi-dent bundles it: installing pi-dent registers the `Markdown` tool in every run mode. Installing
+this package as a pi package (`pi install npm:pi-dent-markdown`) registers the same tool with the
+runtime's host defaults — installed next to pi-dent, `Markdown` is registered twice, so a pi-dent
+user does not need it. To register it from an extension of your own:
 
 ```ts
 import { makeMarkdownTool, markdownRuntime } from "pi-dent-markdown";
@@ -47,7 +49,7 @@ pi.registerTool(makeMarkdownTool(markdownRuntime()));
 There is no configuration key. `markdownRuntime` takes the host-specific pieces as parameters —
 `home`, `readFile`, `writeFile`, `mutationQueue`, `parseBudgetMs` — with pi's own as defaults.
 The registration surface, including the model-facing texts registered verbatim, is owned by
-`specs/markdown-tool.md`, Section 1. Requires Node 26 or later.
+`specs/markdown-tool.md`. Requires Node 26 or later.
 
 ## Documentation
 

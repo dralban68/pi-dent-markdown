@@ -13,7 +13,8 @@ the one its `path` names, and MUST NOT create or delete a file.
 
 ## 1. Tool registration surface
 
-The extension MUST register the tool through the host `registerTool` API, in every run mode:
+pi-dent's extension MUST register the tool through the host `registerTool` API, in every run mode; the
+package's standalone entry registers it the same way (Section 1.5):
 
 | Field              | Value                                                          |
 | ------------------ | -------------------------------------------------------------- |
@@ -160,6 +161,20 @@ Each property of the parameter schema, and of the operation schema, carries this
 
 The schema of an element of `operations` carries no `description` of its own, and no
 alternative inside a property carries one.
+
+### 1.5 The standalone extension entry
+
+The package registers the tool on its own, through the entry `extension.ts`, so a host that installs
+`pi-dent-markdown` as a pi package gets the tool without pi-dent. The entry's default export takes
+the host `ExtensionAPI` and calls `pi.registerTool(makeMarkdownTool(markdownRuntime()))`, giving
+`markdownRuntime()` no options: its defaults are the host's own file system, `homedir()`, the host's
+mutation queue, and the default parse budget. The tool registered is the one of the table of
+Section 1, and the tool has no configuration key here either.
+
+The library surface stays as pi-dent-agent consumes it: `index.ts` keeps its exports, the entry is
+the only file that calls `registerTool`, and pi-dent-agent never loads the entry. A host with
+pi-dent-agent installed that installs this package as well registers `Markdown` twice, so a
+pi-dent-agent user does not need this package installed.
 
 ## 2. Documents
 

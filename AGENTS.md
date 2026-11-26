@@ -1,7 +1,7 @@
 # pi-dent-markdown
 
-The `Markdown` tool of pi-dent, as a library: `makeMarkdownTool` and `markdownRuntime` are consumed
-by pi-dent's `index.ts` and `lib/engine.ts`. Owned by pi-dent; this package is not a pi extension.
+The `Markdown` tool of pi-dent, as a library: pi-dent consumes `makeMarkdownTool` and
+`markdownRuntime`; `extension.ts` registers the tool standalone (specs/markdown-tool.md).
 
 This repository follows the dev repo standard.
 

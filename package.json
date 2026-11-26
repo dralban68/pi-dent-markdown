@@ -4,7 +4,9 @@
   "description": "The Markdown tool of pi-dent, as a library: outline, read, edit and link-check Markdown files by heading",
   "keywords": [
     "markdown",
-    "pi-dent"
+    "pi-dent",
+    "pi-extension",
+    "pi-package"
   ],
   "homepage": "https://github.com/dralban68/pi-dent-markdown#readme",
   "bugs": "https://github.com/dralban68/pi-dent-markdown/issues",
@@ -15,6 +17,7 @@
     "url": "git+https://github.com/dralban68/pi-dent-markdown.git"
   },
   "files": [
+    "extension.ts",
     "index.ts",
     "lib/"
   ],
@@ -61,5 +64,10 @@
   "engines": {
     "node": ">=26"
   },
-  "packageManager": "pnpm@12.18.0"
+  "packageManager": "pnpm@12.18.0",
+  "pi": {
+    "extensions": [
+      "./extension.ts"
+    ]
+  }
 }
