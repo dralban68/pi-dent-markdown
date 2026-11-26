@@ -228,7 +228,7 @@ terms:
         op: add
   - id: flattening
     label: flattening
-    meaning: "Replacing every maximal run of white space and of the characters U+0000–U+001F and U+007F–U+009F by one space, then removing a leading and a trailing space"
+    meaning: "Replacing every maximal run of white space and of the control characters U+0000–U+001F and U+007F–U+009F in a string by one space, then removing a leading and a trailing space"
     owner: "../pi-dent-agent/specs/search-tool.md"
     group: pi-dent-agent
     key: confusable
@@ -238,6 +238,9 @@ terms:
     history:
       - date: 2026-11-26
         op: add
+      - date: 2026-11-26
+        op: update
+        meaning: "Replacing every maximal run of white space and of the characters U+0000–U+001F and U+007F–U+009F by one space, then removing a leading and a trailing space"
   - id: frontmatter
     label: frontmatter
     meaning: The block of keys and values at the top of a Markdown resource file
@@ -314,7 +317,7 @@ terms:
         op: add
   - id: host
     label: host
-    meaning: The pi process and extension API pi-dent runs in
+    meaning: The pi process and extension API an extension runs in
     owner: "../pi-dent-agent/specs/config-file.md"
     group: pi-dent-agent
     key: confusable
@@ -322,6 +325,9 @@ terms:
     history:
       - date: 2026-11-26
         op: add
+      - date: 2026-11-26
+        op: update
+        meaning: The pi process and extension API pi-dent runs in
   - id: id-attribute
     label: id attribute
     meaning: "A trailing {#<id>} of a heading's text, after a space or tab, that addresses can omit and that rename keeps."
