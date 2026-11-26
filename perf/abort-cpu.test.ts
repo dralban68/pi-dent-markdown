@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { markdownRuntime } from "../lib/markdown-tool.ts";
 
 /**
- * specs/markdown-tool.md specs/markdown-tool.md#parsing: an aborted parse stops, so its worker spends no CPU time
+ * specs/markdown-tool.md#parsing: an aborted parse stops, so its worker spends no CPU time
  * afterwards. The parse would last about a second; measured after the abort,
  * the process uses a few ms of CPU time in 200 ms.
  */

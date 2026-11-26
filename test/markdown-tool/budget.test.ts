@@ -5,7 +5,7 @@ import { revisionOf as revisionOfBytes } from "../../lib/markdown-document.ts";
 import { markdownRuntime } from "../../lib/markdown-tool.ts";
 
 /**
- * specs/markdown-tool.md specs/markdown-tool.md#parsing: the parses run off the host's main thread,
+ * specs/markdown-tool.md#parsing: the parses run off the host's main thread,
  * the parses of one call are bounded by a total budget and end the call as a
  * tool error when they reach it without writing the file, and a parse running
  * when the tool-call signal aborts stops at once.

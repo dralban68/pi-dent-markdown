@@ -4,7 +4,7 @@ import { bytesOf, call, cleanupRoots, revisionOf, runtime, tempDir, write } from
 import { must } from "../support/must.ts";
 
 /**
- * specs/markdown-tool.md specs/markdown-tool.md#section-addresses through the tool: the three matching
+ * specs/markdown-tool.md#section-addresses through the tool: the three matching
  * steps, the ` [<n>]` suffix, the preamble, and the rejection of an address an
  * earlier operation renumbered onto a heading text of the file.
  */

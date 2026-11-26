@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { bytesOf, call, cleanupRoots, revisionOf, runtime, tempDir, write } from "./support.ts";
 
 /**
- * specs/markdown-tool.md specs/markdown-tool.md#section-addresses through the tool: the stripping of an
+ * specs/markdown-tool.md#section-addresses through the tool: the stripping of an
  * address (a leading `* `, a leading line range, leading heading marks, and a
  * trailing ` (+<k> hidden)`), the number components of matching step 4, the
  * precedence of a literal heading, and the collision rejection of an address

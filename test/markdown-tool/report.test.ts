@@ -13,7 +13,7 @@ import {
 import { must } from "../support/must.ts";
 
 /**
- * specs/markdown-tool.md specs/markdown-tool.md#edit-result: the marks each operation leaves, the
+ * specs/markdown-tool.md#edit-result: the marks each operation leaves, the
  * touched sections and their ancestors, the removed, renumbered, and skipped
  * blocks, and the `details` shape.
  */

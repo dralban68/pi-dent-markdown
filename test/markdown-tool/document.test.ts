@@ -15,7 +15,7 @@ import {
 import { must } from "../support/must.ts";
 
 /**
- * specs/markdown-tool.md specs/markdown-tool.md#documents: the file's text and lines (specs/markdown-tool.md#file-access), the
+ * specs/markdown-tool.md#documents: the file's text and lines (specs/markdown-tool.md#file-access), the
  * parse (specs/markdown-tool.md#parsing), the sections (specs/markdown-tool.md#sections), and the section addresses
  * (specs/markdown-tool.md#section-addresses), checked through the outline, read, and edit actions.
  */

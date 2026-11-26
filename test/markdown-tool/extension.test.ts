@@ -6,7 +6,7 @@ import { MARKDOWN_DESCRIPTION } from "../../lib/markdown-tool.ts";
 import { must } from "../support/must.ts";
 
 /**
- * specs/markdown-tool.md specs/markdown-tool.md#standalone-entry: the standalone entry registers exactly one tool, the
+ * specs/markdown-tool.md#standalone-entry: the standalone entry registers exactly one tool, the
  * `Markdown` of specs/markdown-tool.md#registration — name, label, the specs/markdown-tool.md#model-facing-texts description, the schema, and the
  * argument preparation — through the host `registerTool` API. The registered call's behaviour
  * is the library's and is owned by the other suites.

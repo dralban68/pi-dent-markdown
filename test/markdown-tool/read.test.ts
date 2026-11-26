@@ -4,7 +4,7 @@ import { call, cleanupRoots, runtime, tempDir, write } from "./support.ts";
 import { must } from "../support/must.ts";
 
 /**
- * specs/markdown-tool.md specs/markdown-tool.md#action-read: the read range, the offset check, the
+ * specs/markdown-tool.md#action-read: the read range, the offset check, the
  * display lines with collapsed sections, the shown lines with their bounds, the
  * end and cut markers, and the `details` shape.
  */

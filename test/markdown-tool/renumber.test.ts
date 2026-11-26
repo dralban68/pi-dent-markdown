@@ -5,7 +5,7 @@ import { bytesOf, call, cleanupRoots, revisionOf, runtime, tempDir, write } from
 import { must } from "../support/must.ts";
 
 /**
- * specs/markdown-tool.md specs/markdown-tool.md#renumbering: the groups, the bases, the conditions a
+ * specs/markdown-tool.md#renumbering: the groups, the bases, the conditions a
  * group is renumbered under, auto-numbering, the top-down order, and the worked
  * examples of the section, verbatim.
  */

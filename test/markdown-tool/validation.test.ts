@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { call, cleanupRoots, revisionOf, runtime, tempDir, write } from "./support.ts";
 
 /**
- * specs/markdown-tool.md specs/markdown-tool.md#validation: every execution-time check, in its order,
+ * specs/markdown-tool.md#validation: every execution-time check, in its order,
  * with its exact error text, reported before the file is read. Each call goes
  * through the tool; the file named is missing, so any text but the check's own
  * would show the check did not run first.

@@ -1,5 +1,5 @@
 /**
- * The structural edits of specs/markdown-tool.md, specs/markdown-tool.md#action-edit: applying
+ * The structural edits of specs/markdown-tool.md#action-edit: applying
  * operations to a file's lines (#edit-applying, #edit-line-rules), the operations
  * themselves (specs/markdown-tool.md#edit-operations), renumbering and auto-numbering (specs/markdown-tool.md#renumbering), and
  * the marks and report the result is built from (specs/markdown-tool.md#edit-result).

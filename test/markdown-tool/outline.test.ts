@@ -4,7 +4,7 @@ import { call, cleanupRoots, runtime, tempDir, write } from "./support.ts";
 import { must } from "../support/must.ts";
 
 /**
- * specs/markdown-tool.md specs/markdown-tool.md#action-outline: the candidates, the default and given
+ * specs/markdown-tool.md#action-outline: the candidates, the default and given
  * `depth`, the entries with their hidden counts and preview lines, pagination,
  * the "no headings" lines, and the `details` shape.
  */

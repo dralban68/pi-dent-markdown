@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { analyzeDocument, splitLines } from "../lib/markdown-document.ts";
 
 /**
- * specs/markdown-tool.md specs/markdown-tool.md#parsing: a 128 KiB parse takes less than 5000 ms.
+ * specs/markdown-tool.md#parsing: a 128 KiB parse takes less than 5000 ms.
  * Guards the micromark pin in pnpm-workspace.yaml (docs/markdown.md): 4.0.3
  * parses these 128 KB inputs in 17-34 s, 4.0.2 in about 0.4 s.
  */

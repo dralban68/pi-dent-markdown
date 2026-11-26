@@ -4,7 +4,7 @@ import { Text } from "@earendil-works/pi-tui";
 import { makeMarkdownTool, markdownRuntime } from "../../lib/markdown-tool.ts";
 
 /**
- * specs/markdown-tool.md specs/markdown-tool.md#rendering: `renderCall` shows the action, the path, the
+ * specs/markdown-tool.md#rendering: `renderCall` shows the action, the path, the
  * section, and one line per operation, leaves out values that are not yet
  * strings, never throws, and returns a component with no padding and no
  * background of its own.
