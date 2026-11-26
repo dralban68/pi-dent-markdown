@@ -15,7 +15,9 @@
 import {
   analyzeDocument,
   ancestorsOf,
+  idAttributeOf,
   isBlank,
+  isIdComponent,
   isWithin,
   noSectionMessage,
   numberOfComponent,
@@ -25,6 +27,7 @@ import {
   resolveAddress,
   sameComponents,
   stripAddress,
+  withoutIdAttribute,
   type DocModel,
   type LineSpan,
   type MatchStep,
@@ -501,14 +504,17 @@ function collidesOnRenumbering(
 ): boolean {
   const parts = parseAddress(value).components;
   const last = parts[parts.length - 1] ?? "";
+  // An id names its section whatever renumbering did (specs/markdown-tool.md#section-addresses).
+  if (isIdComponent(last)) return false;
   const byText = step === 1 || step === 2;
+  const name = withoutIdAttribute(section.text);
   const byNumber = step === 4 && numberOfComponent(last) !== undefined;
   const own = parseNumberPrefix(section.text);
   for (const id of work.originalOrder) {
     if (id === identity) continue;
     const heading = work.originalHeadings.get(id);
     if (heading === undefined) continue;
-    if (byText && heading.text === section.text) return true;
+    if (byText && withoutIdAttribute(heading.text) === name) return true;
     if (!byNumber || own === undefined) continue;
     const other = parseNumberPrefix(heading.text);
     if (other !== undefined && sameComponents(other.components, own.components)) return true;
@@ -985,6 +991,17 @@ function renumberGroups(
 
 /** The heading text a rename writes (specs/markdown-tool.md#edit-operations). */
 function renameText(section: DocSection, heading: string): string {
+  // The id attribute is permanent: it stays unless the new text brings its own.
+  const attribute = idAttributeOf(section.text);
+  const kept =
+    attribute !== undefined && idAttributeOf(heading) === undefined
+      ? ` ${attribute.attribute}`
+      : "";
+  return numberedRename(section, heading) + kept;
+}
+
+/** The rename text with `X`'s number prefix when the new text has none (specs/markdown-tool.md#edit-operations). */
+function numberedRename(section: DocSection, heading: string): string {
   const existing = parseNumberPrefix(section.text);
   const given = parseNumberPrefix(heading);
   if (existing === undefined || given !== undefined) return heading;

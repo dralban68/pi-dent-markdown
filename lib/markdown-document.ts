@@ -539,6 +539,31 @@ export function parseNumberPrefix(text: string): NumberPrefix | undefined {
   };
 }
 
+/** A trailing `{#<id>}` after spaces or tabs: a heading's id attribute (specs/markdown-tool.md#parsing). */
+const ID_ATTRIBUTE = /[ \t]+(\{#([A-Za-z][A-Za-z0-9_.-]*)\})$/;
+
+/** A heading's id attribute (specs/markdown-tool.md#parsing). */
+export interface IdAttribute {
+  /** The id between `{#` and `}`. */
+  id: string;
+  /** The attribute as written, braces included. */
+  attribute: string;
+  /** The heading text without the attribute and the spaces and tabs before it. */
+  bare: string;
+}
+
+/** The id attribute that ends a heading text, or undefined when it has none (specs/markdown-tool.md#parsing). */
+export function idAttributeOf(text: string): IdAttribute | undefined {
+  const match = ID_ATTRIBUTE.exec(text);
+  if (match === null) return;
+  return { id: match[2] ?? "", attribute: match[1] ?? "", bare: text.slice(0, match.index) };
+}
+
+/** A heading text without its id attribute (specs/markdown-tool.md#parsing). */
+export function withoutIdAttribute(text: string): string {
+  return idAttributeOf(text)?.bare ?? text;
+}
+
 /** A heading text without a leading number prefix (specs/markdown-tool.md#renumbering). */
 export function withoutNumberPrefix(text: string): string {
   const number = parseNumberPrefix(text);
@@ -564,6 +589,14 @@ export function sameComponents(left: readonly number[], right: readonly number[]
  * optional trailing dot, and nothing else.
  */
 const NUMBER_COMPONENT = /^(?:Section |§)?[ \t]*([0-9]+(?:\.[0-9]+)*)\.?$/;
+
+/** An id component: `#` and an id (specs/markdown-tool.md#section-addresses). */
+const ID_COMPONENT = /^#([A-Za-z][A-Za-z0-9_.-]*)$/;
+
+/** True when a component is an id component (specs/markdown-tool.md#section-addresses). */
+export function isIdComponent(component: string): boolean {
+  return ID_COMPONENT.test(component);
+}
 
 /** The integers a number component denotes, or undefined when the component is no number component. */
 export function numberOfComponent(component: string): number[] | undefined {
@@ -675,7 +708,28 @@ function componentMatches(
   step: MatchStep,
   ranged: boolean,
 ): boolean {
-  const title = ranged ? section.component.replace(COUNT_SUFFIX, "") : section.component;
+  const attribute = idAttributeOf(section.text);
+  if (step === 1 && attribute !== undefined) {
+    const named = ID_COMPONENT.exec(component);
+    if (named !== null && named[1] === attribute.id) return true;
+  }
+  // The component as it is, and without the heading's id attribute, its ` [<n>]` kept.
+  const titles = [section.component];
+  if (attribute !== undefined) {
+    titles.push(attribute.bare + section.component.slice(section.text.length));
+  }
+  return titles.some((title) =>
+    titleMatches(section, ranged ? title.replace(COUNT_SUFFIX, "") : title, component, step),
+  );
+}
+
+/** True when one form of a section's component matches a component at `step` (specs/markdown-tool.md#section-addresses). */
+function titleMatches(
+  section: DocSection,
+  title: string,
+  component: string,
+  step: MatchStep,
+): boolean {
   if (step === 1) return title === component;
   if (step === 2) return normalizeComponent(title) === normalizeComponent(component);
   const byPrefix =
