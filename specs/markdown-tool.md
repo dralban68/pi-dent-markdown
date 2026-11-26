@@ -368,7 +368,7 @@ when none qualifies, and `6` when there is no candidate.
 > `#` heading over everything, as each of pi-dent's specifications has, depth 1 lists a
 > single line.
 
-The entries are the candidates whose level is at most `<d>`, and with `section` the addressed
+The outline entries are the candidates whose level is at most `<d>`, and with `section` the addressed
 section whatever its level, in document order. The call MUST be rejected as a tool error with the
 text `offset <offset> is past the last entry (<total> entries)` when `offset` is greater than 0
 and at least `<total>`, the number of entries. The shown entries are the `limit` entries from
@@ -702,7 +702,7 @@ Section 6.9, in addition; the extension changes no block structure, so the secti
 
 ### 6.1 Items {#link-items}
 
-The items are the following elements of the document that start on a line of the scope, in
+The link items are the following elements of the document that start on a line of the scope, in
 document order of their start; an element inside another, such as an image in a link's text,
 follows it. The links of code spans, code blocks, HTML blocks, and raw HTML ([CommonMark],
 Sections 4.4 to 4.6 and 6.1 and 6.6) are text and give no item.
