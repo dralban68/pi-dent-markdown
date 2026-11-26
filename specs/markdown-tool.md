@@ -11,7 +11,7 @@ and `write` tools, which read, change, and write a file as text.
 call MUST NOT create, change, or delete any file. An `edit` call MUST NOT change any file other than
 the one its `path` names, and MUST NOT create or delete a file.
 
-## 1. Tool registration surface
+## 1. Tool registration surface {#registration}
 
 pi-dent's extension MUST register the tool through the host `registerTool` API, in every run mode; the
 package's standalone entry registers it the same way (Section 1.5):
@@ -30,7 +30,7 @@ A child session binds `Markdown` under the rule of pi-dent-agent `specs/agent-to
 The tool has no configuration key. Every rejection this specification gives is a tool error
 (`isError: true`) whose content is its error text alone, with no `details`.
 
-### 1.1 Parameter schema
+### 1.1 Parameter schema {#parameters}
 
 The parameter schema is a JSON object schema with `type: "object"` and
 `additionalProperties: false`, with two required fields, `action` and `path`; every other field
@@ -67,7 +67,7 @@ length bounds of `operations`, and the set of admitted properties, and nothing e
 host rejects against it is a schema rejection (pi-dent-agent `specs/task.md`, Section 1). An integer is a
 number for which ECMAScript `Number.isInteger` holds.
 
-### 1.2 Argument preparation
+### 1.2 Argument preparation {#argument-preparation}
 
 Before the host validates a call against the schema, the argument preparation MUST replace an
 `operations` value that is a string holding a JSON array by that array, and an `operations`
@@ -77,7 +77,7 @@ array holding that object. It MUST leave every other argument unchanged.
 > Note (non-normative): some models send an array argument as a JSON string or a lone object;
 > the host's own `edit` tool repairs the same shapes.
 
-### 1.3 Validation
+### 1.3 Validation {#validation}
 
 Execution-time validation MUST reject the call as a tool error (`isError: true`) whose text is
 the error text of the first failing check, in this order, before the file is read:
@@ -121,7 +121,7 @@ heading line, or for check 22 of the first such line; `<l>` is the heading's lev
 those of Section 2.1, then the address resolution of Section 2.4, then those of the action's own
 section.
 
-### 1.4 Model-facing texts
+### 1.4 Model-facing texts {#model-facing-texts}
 
 The texts of this section are what a model reads to choose and fill a call; each MUST be
 registered verbatim, and none cites a specification.
@@ -162,7 +162,7 @@ Each property of the parameter schema, and of the operation schema, carries this
 The schema of an element of `operations` carries no `description` of its own, and no
 alternative inside a property carries one.
 
-### 1.5 The standalone extension entry
+### 1.5 The standalone extension entry {#standalone-entry}
 
 The package registers the tool on its own, through the entry `extension.ts`, so a host that installs
 `pi-dent-markdown` as a pi package gets the tool without pi-dent. The entry's default export takes
@@ -176,9 +176,9 @@ the only file that calls `registerTool`, and pi-dent-agent never loads the entry
 pi-dent-agent installed that installs this package as well registers `Markdown` twice, so a
 pi-dent-agent user does not need this package installed.
 
-## 2. Documents
+## 2. Documents {#documents}
 
-### 2.1 File access
+### 2.1 File access {#file-access}
 
 The trimmed `path`, with one leading `@` removed, `~` or a leading `~/` standing for the user's
 home directory, resolves against the working directory of the invoking session when it is
@@ -215,7 +215,7 @@ line ending at the end of the text starts no further line. Lines are numbered fr
 file's line count is the number of lines, `0` for an empty text. A blank line is a line holding
 only spaces and tabs, or nothing ([CommonMark], Section 2.1).
 
-### 2.2 Parsing
+### 2.2 Parsing {#parsing}
 
 This tool detects frontmatter (pi-dent-agent `specs/skill.md`, Section 1) in any file: when line 1 is `---`
 followed by nothing but spaces and tabs and a later line is too, line 1 through the first such
@@ -261,7 +261,7 @@ or a nested list (`- a` with ` - b`), MUST take less than 5000 ms on a developer
 > lists or block quotes, so a file well within the size limit of Section 2.1 can exceed the
 > budget.
 
-### 2.3 Sections
+### 2.3 Sections {#sections}
 
 Each heading of the document starts one section, of the heading's level. A section ends at its
 end line: the last non-blank line before the heading line of the next heading whose level is at
@@ -281,7 +281,7 @@ heading line to its end line.
   heading; the file has no preamble when its document's first non-blank line is a heading line,
   or when the document has no non-blank line. The preamble is not a section.
 
-### 2.4 Section addresses
+### 2.4 Section addresses {#section-addresses}
 
 A section's component is its heading text, or `(untitled)` when the text is empty, followed by
 ` [<n>]` when `<n>` − 1 earlier sections with the same parent, or earlier top-level sections for
@@ -357,7 +357,7 @@ address without its line range matches at the first step that matches any sectio
 `<start>-<end> <full>`, `<start>` and `<end>` its reference span, or `(new) <full>` when it has
 none, `<full>` being its full address in the text the address resolves against.
 
-## 3. Action `outline`
+## 3. Action `outline` {#action-outline}
 
 The candidates are every section, or, with `section`, the addressed section and its
 descendants. `<d>` is `depth` when given; otherwise, with `<c>` the greater of `limit` and 100, the greatest level `L` among the candidates'
@@ -403,7 +403,7 @@ conditions of their lines, and `<entry>`, for each shown entry,
 `{ address, level, start, end, hidden, preview? }`, `address` the full address and `preview` the
 preview line's text without its four spaces.
 
-## 4. Action `read`
+## 4. Action `read` {#action-read}
 
 The read range is the span of the addressed section, or the preamble's lines for `(preamble)`;
 `<start>` and `<end>` are its first and last lines. The call MUST be rejected as a tool error
@@ -436,9 +436,9 @@ The text is these parts, joined by one line feed:
 `null` for the preamble, `from` the first line of the first shown display line, `to` the last
 file line the shown lines cover, and `next` `<next>`, present exactly when the cut line is.
 
-## 5. Action `edit`
+## 5. Action `edit` {#action-edit}
 
-### 5.1 Applying
+### 5.1 Applying {#edit-applying}
 
 An `edit` call MUST hold the host's file mutation queue for the resolved path — the per-file
 serialization of the host's `edit` and `write` tools, keyed by the path with symbolic links
@@ -471,7 +471,7 @@ was empty, and with none otherwise; this rule overrides the others of this parag
 
 No operation changes heading text other than `rename` and renumbering (Section 5.4).
 
-### 5.2 Line rules
+### 5.2 Line rules {#edit-line-rules}
 
 - The content block of `content` is its lines (split as in Section 2.1) without leading and
   trailing blank lines; it can be empty.
@@ -492,7 +492,7 @@ No operation changes heading text other than `rename` and renumbering (Section 5
   new level, the rest of its line kept; a setext heading's lines are replaced by one line of `#`
   repeated as many times as the new level, a space, and its heading text.
 
-### 5.3 Operations
+### 5.3 Operations {#edit-operations}
 
 `X` is the section `section` names and `Y` the section `at` names, `section` resolved before `at`
 per Section 2.4, both before the operation changes anything; `B` is the content block. For
@@ -540,7 +540,7 @@ operation, of the first of them in document order; `<f>` the frontmatter's last 
 line of the first heading at which the document after the operation differs from the expected
 headings, or the last line of the text when none does.
 
-### 5.4 Renumbering
+### 5.4 Renumbering {#renumbering}
 
 A heading is numbered when its heading text starts with a number prefix: one or more runs of the
 digits `0` to `9` joined by single `.` characters, optionally followed by one more `.` (the
@@ -636,7 +636,7 @@ subsections with them; the report lists all of them. Written with `### 9.1 Goals
 `### 9.3 Limits`, they become `2.1` and `2.2`; written with `### 1. Goals` and `### 3. Limits`,
 they stay flat as `1. Goals` and `2. Limits`.
 
-### 5.5 Result
+### 5.5 Result {#edit-result}
 
 Each operation marks a line: `replace` and `insert` the heading line of the first heading they
 wrote; `move`, `replace_body`, `rename`, and `set_level` the heading line of `X`, and
@@ -693,14 +693,14 @@ unchanged.
 holding the touched sections, removed sections, renumbered headings, and skipped groups in the
 orders above, `from` and `to` being `<old>` and `<new>`, `end` and `subsections` of each removed section being as block 1 gives them, and each `<number>` a prefix as written.
 
-## 6. Action `links`
+## 6. Action `links` {#action-links}
 
 This action parses the document as Section 2.2 does, with the extended autolinks of [GFM],
 Section 6.9, in addition; the extension changes no block structure, so the sections are those of
 Section 2.3. The scope is the span of the addressed section, the preamble's lines for
 `(preamble)`, or, without `section`, every line of the document.
 
-### 6.1 Items
+### 6.1 Items {#link-items}
 
 The items are the following elements of the document that start on a line of the scope, in
 document order of their start; an element inside another, such as an image in a link's text,
@@ -738,7 +738,7 @@ characters, cut to its first 60 characters followed by `…`.
 > Note (non-normative): a shortcut `[x]` with no definition is plain text, as in a task list or
 > a quoted array, so it is never an `undefined-reference`.
 
-### 6.2 Result
+### 6.2 Result {#links-result}
 
 The call MUST be rejected as a tool error with the text
 `offset <offset> is past the last item (<total> items)` when `offset` is greater than 0 and at
@@ -764,7 +764,7 @@ it has a text.
 `path` the absolute resolved path, `scope` `<scope>`, `more` `true` exactly when the
 `More items follow` line is present, and `items` the shown items with their fields.
 
-## 7. Rendering in the conversation
+## 7. Rendering in the conversation {#rendering}
 
 The host draws each call in its default tool shell and its result as its text. `renderCall`
 MUST show lines joined by one line feed: `Markdown <action> <path>`, followed by ` › <section>`
@@ -774,7 +774,7 @@ While the host is still receiving the arguments, a value that is not yet a strin
 and `renderCall` MUST NOT throw. The component `renderCall` returns MUST carry no horizontal
 padding and no background of its own.
 
-## 8. Normative references
+## 8. Normative references {#normative-references}
 
 - [CommonMark] CommonMark Spec, version 0.31.2 (2024-01-28), J. MacFarlane: Section 2.1
   (characters, lines, line endings, blank lines), Sections 2.4 and 2.5 (backslash escapes, entity
@@ -787,7 +787,7 @@ padding and no background of its own.
 - [ECMA-262] ECMAScript Language Specification, 14th edition (June 2023), Ecma International:
   `String.prototype.toLowerCase` and `Number.isInteger`.
 
-## 9. Specification gaps
+## 9. Specification gaps {#specification-gaps}
 
 - A heading whose text contains the separator of Section 2.4 cannot be named by an address that
   includes its text.
