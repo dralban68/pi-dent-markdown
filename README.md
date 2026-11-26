@@ -50,7 +50,7 @@ import { makeMarkdownTool, markdownRuntime } from "pi-dent-markdown";
 pi.registerTool(makeMarkdownTool(markdownRuntime()));
 ```
 
-There is no configuration key. `markdownRuntime` takes the host-specific pieces as parameters —
+It has no root key in `pi-dent.conf`. `markdownRuntime` takes the host-specific pieces as parameters —
 `home`, `readFile`, `writeFile`, `mutationQueue`, `parseBudgetMs` — with pi's own as defaults.
 The registration surface, including the model-facing texts registered verbatim, is owned by
 [markdown-tool.md, tool registration surface](specs/markdown-tool.md#registration). Requires Node 26

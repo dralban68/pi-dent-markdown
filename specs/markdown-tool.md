@@ -27,7 +27,7 @@ package's standalone entry registers it the same way ([standalone extension entr
 | `renderShell`      | not set: the host's default tool shell                                                                           |
 
 A child session binds `Markdown` under the rule of pi-dent-agent `specs/agent-tool.md`, Section 3.1.
-The tool has no configuration key. Every rejection this specification gives is a tool error
+The tool has no root key in `pi-dent.conf`. Every rejection this specification gives is a tool error
 (`isError: true`) whose content is its error text alone, with no `details`.
 
 ### 1.1 Parameter schema {#parameters}
@@ -169,7 +169,7 @@ The package registers the tool on its own, through the entry `extension.ts`, so 
 the host `ExtensionAPI` and calls `pi.registerTool(makeMarkdownTool(markdownRuntime()))`, giving
 `markdownRuntime()` no options: its defaults are the host's own file system, `homedir()`, the host's
 mutation queue, and the default parse budget. The tool registered is the one of the table of
-[tool registration surface](#registration), and the tool has no configuration key here either.
+[tool registration surface](#registration), and the tool has no root key here either.
 
 The library surface stays as pi-dent-agent consumes it: `index.ts` keeps its exports, the entry is
 the only file that calls `registerTool`, and pi-dent-agent never loads the entry. A host with
