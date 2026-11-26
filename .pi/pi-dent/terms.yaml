@@ -620,6 +620,20 @@ terms:
     history:
       - date: 2026-11-26
         op: add
+  - id: pi-dent-conf
+    label: pi-dent.conf
+    meaning: "pi-dent's JSONC configuration file, read from the global and the project layer directory and merged deeply"
+    owner: "../pi-dent-agent/specs/config-file.md"
+    group: pi-dent-agent
+    key: shared
+    status: active
+    distinguish:
+      - root-key
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
   - id: preamble
     label: preamble
     meaning: "The non-blank-bounded lines of the document before its first heading; not a section."
@@ -712,6 +726,22 @@ terms:
     history:
       - date: 2026-11-26
         op: add
+  - id: root-key
+    label: root key
+    meaning: "A top-level key of pi-dent.conf, owned by the pi-dent spec or sibling package that defines its value"
+    owner: "../pi-dent-agent/specs/config-file.md"
+    group: pi-dent-agent
+    key: shared
+    status: active
+    reject:
+      - configuration key
+    distinguish:
+      - pi-dent-conf
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
   - id: schema-rejection
     label: schema rejection
     meaning: "A call the host turns away because its arguments do not satisfy the tool's parameter schema"
