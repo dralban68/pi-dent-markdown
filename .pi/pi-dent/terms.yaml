@@ -322,6 +322,34 @@ terms:
     history:
       - date: 2026-11-26
         op: add
+  - id: id-attribute
+    label: id attribute
+    meaning: "A trailing {#<id>} of a heading's text, after a space or tab, that addresses can omit and that rename keeps."
+    owner: specs/markdown-tool.md
+    group: Documents
+    key: local
+    status: active
+    distinguish:
+      - id-component
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
+  - id: id-component
+    label: id component
+    meaning: "An address component that is # followed by an id, which names the section whose heading's id attribute holds it."
+    owner: specs/markdown-tool.md
+    group: Section addresses
+    key: local
+    status: active
+    distinguish:
+      - id-attribute
+    history:
+      - date: 2026-11-26
+        op: add
+      - date: 2026-11-26
+        op: update
   - id: item-line
     label: item line
     meaning: "A link item's text line: its line, kind, and destination, label, and text when it has them."
