@@ -29,3 +29,4 @@ pnpm fmt:check
   pi-dent's own (`pi-dent.conf`, `~/.pi/pi-dent/`, `PI_DENT_*`).
 - pi-dent-agent consumes this package from npm at an exact version: publish a change, then bump the
   version in pi-dent-agent and run its `pnpm check`.
+- Published to npm, so package.json is not private: the one accepted dev audit finding.
