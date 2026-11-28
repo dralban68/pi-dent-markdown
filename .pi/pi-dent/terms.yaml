@@ -194,7 +194,7 @@ terms:
         op: add
   - id: entry-line
     label: entry line
-    meaning: "An outline entry's text line: its span, heading marks, component, and hidden count."
+    meaning: "An outline entry's text line: its span, heading marks, component, line count, and hidden count."
     owner: specs/markdown-tool.md
     group: Outline and read
     key: local
@@ -206,6 +206,9 @@ terms:
         op: add
       - date: 2026-11-26
         op: update
+      - date: 2026-11-28
+        op: update
+        meaning: "An outline entry's text line: its span, heading marks, component, and hidden count."
   - id: file-mutation-queue
     label: file mutation queue
     meaning: "The host's per-file serialization of its edit and write tools, which an edit call holds from its read to its write."
@@ -652,7 +655,7 @@ terms:
         op: add
   - id: preview-line
     label: preview line
-    meaning: "Four spaces and the flattened first line of a section's own body, shown under its entry line."
+    meaning: "Four spaces and the shortened, flattened first paragraph of a section's own body, shown under its entry line."
     owner: specs/markdown-tool.md
     group: Outline and read
     key: local
@@ -660,6 +663,9 @@ terms:
     history:
       - date: 2026-11-26
         op: add
+      - date: 2026-11-28
+        op: update
+        meaning: "Four spaces and the flattened first line of a section's own body, shown under its entry line."
   - id: read-range
     label: read range
     meaning: "The lines a read call can show: the addressed section's span, or the preamble's lines."
