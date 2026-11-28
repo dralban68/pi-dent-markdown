@@ -1,6 +1,6 @@
 {
   "name": "pi-dent-markdown",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Outline, read, edit and link-check Markdown files by heading: a pi extension, and the library of pi-dent's Markdown tool",
   "keywords": [
     "markdown",
