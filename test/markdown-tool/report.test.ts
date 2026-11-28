@@ -71,9 +71,9 @@ test("specs/markdown-tool.md#edit-result: a rename lists the touched section and
   const outcome = await edit(DOCUMENT, [{ op: "rename", section: "One A", heading: "Renamed" }]);
   assert.equal(outcome.isError, false);
   assert.deepEqual(outcome.lines.slice(1), [
-    "  1-19 # Doc (+2 hidden)",
-    "  5-15 ## One (+1 hidden)",
-    "* 9-11 ### Renamed",
+    "  1-19 # Doc (19 lines) (+2 hidden)",
+    "  5-15 ## One (11 lines) (+1 hidden)",
+    "* 9-11 ### Renamed (3 lines)",
   ]);
   assert.deepEqual(outcome.details.touched, [
     { address: "Doc > One > Renamed", level: 3, start: 9, end: 11 },
@@ -91,8 +91,8 @@ test("specs/markdown-tool.md#edit-result: a delete marks the parent, and the wor
     /^Edited a\.md: 1 operations · 15 lines · revision [0-9a-f]{8}$/,
   );
   assert.deepEqual(outcome.lines.slice(1), [
-    "  1-15 # Doc (+2 hidden)",
-    "* 5-11 ## One (+1 hidden)",
+    "  1-15 # Doc (15 lines) (+2 hidden)",
+    "* 5-11 ## One (7 lines) (+1 hidden)",
     "1 sections removed or overwritten:",
     "  9-11 ### One A (3 lines, 0 subsections)",
   ]);
@@ -134,9 +134,9 @@ test("specs/markdown-tool.md#edit-result: replace and insert mark the heading li
     { address: "Doc > One > New A", level: 3, start: 9, end: 11 },
   ]);
   assert.deepEqual(replaced.lines.slice(1), [
-    "  1-19 # Doc (+2 hidden)",
-    "  5-15 ## One (+1 hidden)",
-    "* 9-11 ### New A",
+    "  1-19 # Doc (19 lines) (+2 hidden)",
+    "  5-15 ## One (11 lines) (+1 hidden)",
+    "* 9-11 ### New A (3 lines)",
     "1 sections removed or overwritten:",
     "  9-11 ### One A (3 lines, 0 subsections)",
   ]);
@@ -171,8 +171,8 @@ test("specs/markdown-tool.md#edit-result: the removed block lists the headings i
   ]);
   assert.equal(outcome.isError, false);
   assert.deepEqual(outcome.lines.slice(1), [
-    "  1-11 # Doc (+1 hidden)",
-    "* 5-7 ## One",
+    "  1-11 # Doc (11 lines) (+1 hidden)",
+    "* 5-7 ## One (3 lines)",
     "2 sections removed or overwritten:",
     "  9-11 ### One A (3 lines, 0 subsections)",
     "  13-15 ### One B (3 lines, 0 subsections)",
@@ -204,7 +204,7 @@ test("specs/markdown-tool.md#edit-result: the renumbered block names the old and
   const outcome = await edit(text, [{ op: "delete", section: "1. One" }]);
   assert.equal(outcome.isError, false);
   assert.deepEqual(outcome.lines.slice(1), [
-    "* 1-5 # Doc (+1 hidden)",
+    "* 1-5 # Doc (5 lines) (+1 hidden)",
     "1 sections removed or overwritten:",
     "  3-5 ## 1. One (3 lines, 0 subsections)",
     "1 headings renumbered; references to their old numbers elsewhere in the text were not updated:",
@@ -225,8 +225,8 @@ test("specs/markdown-tool.md#edit-result: a section a replace rewrites is report
     { start: 3, end: 5, level: 2, text: "One", subsections: 0 },
   ]);
   assert.deepEqual(outcome.lines.slice(1), [
-    "  1-5 # Doc",
-    "* 3-5 ## One",
+    "  1-5 # Doc (5 lines)",
+    "* 3-5 ## One (3 lines)",
     "1 sections removed or overwritten:",
     "  3-5 ## One (3 lines, 0 subsections)",
   ]);
@@ -272,8 +272,8 @@ test("specs/markdown-tool.md#edit-result: set_level marks the heading line of th
   const outcome = await edit(DOCUMENT, [{ op: "set_level", section: "One", level: 3 }]);
   assert.equal(outcome.isError, false);
   assert.deepEqual(outcome.lines.slice(1), [
-    "  1-19 # Doc (+3 hidden)",
-    "* 5-15 ### One (+2 hidden)",
+    "  1-19 # Doc (19 lines) (+3 hidden)",
+    "* 5-15 ### One (11 lines) (+2 hidden)",
   ]);
   assert.deepEqual(outcome.details.touched, [
     { address: "Doc > One", level: 3, start: 5, end: 15 },
@@ -287,8 +287,8 @@ test("specs/markdown-tool.md#edit-result: replace_body marks the heading line of
   ]);
   assert.equal(outcome.isError, false);
   assert.deepEqual(outcome.lines.slice(1), [
-    "  1-19 # Doc (+3 hidden)",
-    "* 5-15 ## One (+2 hidden)",
+    "  1-19 # Doc (19 lines) (+3 hidden)",
+    "* 5-15 ## One (11 lines) (+2 hidden)",
   ]);
   assert.deepEqual(outcome.details.touched, [
     { address: "Doc > One", level: 2, start: 5, end: 15 },

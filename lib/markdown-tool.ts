@@ -69,7 +69,7 @@ export const MARKDOWN_PARAMETER_DESCRIPTIONS = {
   section:
     "outline and links: only this section and its subsections. read: the section to return (required unless sections is given); (preamble) names the text before the first heading, for read and links.",
   sections:
-    "For read: multiple sections to return in one call, sharing the line and character budget; exclusive with section and offset.",
+    "For read: multiple sections to return in one call, sharing the line and character budget; exclusive with section and offset. To continue a cut section, call read with section and that section's offset.",
   depth:
     "A heading level, 1 to 6. outline: the deepest level listed (1: # only, 2: # and ##, and so on); default: the deepest that fits in limit or 100 entries, whichever is greater. read: subsections deeper than this level are shown as their heading only.",
   preview: "For outline: true also shows a short preview of each section's body. Default false.",

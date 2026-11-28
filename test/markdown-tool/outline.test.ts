@@ -191,6 +191,14 @@ test("specs/markdown-tool.md#action-outline: preview lines join wrapped prose, s
   const long = ["# Doc", "", "y".repeat(200), ""].join("\n");
   const cut = await outline(long, { preview: true });
   assert.equal(cut.lines[2], `    ${"y".repeat(160)}\u2026`);
+
+  const nbsp = ["# Doc", "", "\u00a0", ""].join("\n");
+  const emptyFlattened = await outline(nbsp, { preview: true });
+  assert.deepEqual(emptyFlattened.lines.slice(1), ["1-3 # Doc (3 lines)"]);
+  assert.equal(
+    "preview" in ((emptyFlattened.details.entries as Record<string, unknown>[])[0] ?? {}),
+    false,
+  );
 });
 
 test("specs/markdown-tool.md#action-outline: pagination reports the next offset, and an offset past the last entry is rejected", async () => {

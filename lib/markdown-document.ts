@@ -608,7 +608,8 @@ export function numberOfComponent(component: string): number[] | undefined {
 /**
  * The value of a section address after stripping (specs/markdown-tool.md#section-addresses): trimmed, then
  * stripped, in this order and each at most once, of a leading `* `, a leading
- * line range `<a>-<b> `, a trailing ` (+<k> hidden)`, and a trailing ` (<n> lines)`.
+ * line range `<a>-<b> `, a trailing ` (+<k> hidden)`, and (when a line range was
+ * stripped) a trailing ` (<n> lines)`.
  */
 export function stripAddress(value: string): string {
   return parseAddress(value).text;
@@ -649,7 +650,7 @@ export function parseAddress(value: string): ParsedAddress {
     text = text.slice(span[0].length);
   }
   text = text.replace(/ \(\+[0-9]+ hidden\)$/, "");
-  text = text.replace(/ \([0-9]+ lines\)$/, "");
+  if (range !== undefined) text = text.replace(/ \([0-9]+ lines\)$/, "");
   const components = text
     .split(ADDRESS_SEPARATOR)
     .map((part) => part.trim().replace(/^#{1,6} /, ""));

@@ -1315,9 +1315,10 @@ function reportOf(
       if (!listedIndexes.has(other.index)) hidden += 1;
     }
     const mark = touchedIndexes.has(index) ? "* " : "  ";
+    const lineCount = section.end - section.start + 1;
     const hiddenText = hidden > 0 ? ` (+${hidden} hidden)` : "";
     listed.push(
-      `${mark}${section.start}-${section.end} ${"#".repeat(section.level)} ${section.component}${hiddenText}`,
+      `${mark}${section.start}-${section.end} ${"#".repeat(section.level)} ${section.component} (${lineCount} lines)${hiddenText}`,
     );
   }
 

@@ -86,6 +86,19 @@ test("specs/markdown-tool.md#section-addresses: a trailing ` (+<k> hidden)` and 
   const linesOnly = await read(NESTED, "5-7 ### One A (3 lines)");
   assert.equal(linesOnly.isError, false);
   assert.equal(linesOnly.address, "Doc > One > One A");
+  const editLine = await read(NESTED, "* 3-7 ## One (5 lines) (+1 hidden)");
+  assert.equal(editLine.isError, false);
+  assert.equal(editLine.address, "Doc > One");
+});
+
+test("specs/markdown-tool.md#section-addresses: ` (<n> lines)` is not stripped without a line range, so a literal heading resolves", async () => {
+  const text = ["# Notes", "", "a", "", "# Notes (2 lines)", "", "b", ""].join("\n");
+  const literal = await read(text, "Notes (2 lines)");
+  assert.equal(literal.isError, false);
+  assert.equal(literal.address, "Notes (2 lines)");
+  const copied = await read(text, "5-7 # Notes (2 lines) (3 lines)");
+  assert.equal(copied.isError, false);
+  assert.equal(copied.address, "Notes (2 lines)");
 });
 
 test("specs/markdown-tool.md#section-addresses: the stripping runs in order, after the trim, on the whole value", async () => {

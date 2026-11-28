@@ -296,6 +296,10 @@ test("specs/markdown-tool.md#action-read: sections shares limit and 50000-charac
     { address: "Doc > Two", level: 2, start: 17, end: 19, next: 17 },
   ]);
 
+  const resumed = await read(DOCUMENT, { section: "Doc > Two", offset: 17 });
+  assert.equal(resumed.isError, false, resumed.text);
+  assert.deepEqual(resumed.lines.slice(1), ["## Two", "", "body two", "--- end of section ---"]);
+
   const big = "x".repeat(30000);
   const text = ["# A", "", big, "", "# B", "", big, ""].join("\n");
   const capped = await read(text, { sections: ["A", "B"] });

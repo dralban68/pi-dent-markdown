@@ -152,7 +152,7 @@ Each property of the parameter schema, and of the operation schema, carries this
 | `action`                | `outline: list the sections with their line ranges. read: return one or more sections' text. edit: apply structural operations. links: list the links and their destinations.`                                                                                                                                                                                                                                                               |
 | `path`                  | `Path to the Markdown file (relative or absolute).`                                                                                                                                                                                                                                                                                                                                                                                          |
 | `section`               | `outline and links: only this section and its subsections. read: the section to return (required unless sections is given); (preamble) names the text before the first heading, for read and links.`                                                                                                                                                                                                                                         |
-| `sections`              | `For read: multiple sections to return in one call, sharing the line and character budget; exclusive with section and offset.`                                                                                                                                                                                                                                                                                                               |
+| `sections`              | `For read: multiple sections to return in one call, sharing the line and character budget; exclusive with section and offset. To continue a cut section, call read with section and that section's offset.`                                                                                                                                                                                                                                  |
 | `depth`                 | `A heading level, 1 to 6. outline: the deepest level listed (1: # only, 2: # and ##, and so on); default: the deepest that fits in limit or 100 entries, whichever is greater. read: subsections deeper than this level are shown as their heading only.`                                                                                                                                                                                    |
 | `preview`               | `For outline: true also shows a short preview of each section's body. Default false.`                                                                                                                                                                                                                                                                                                                                                        |
 | `offset`                | `outline and links: how many entries or items to skip; copy it from the "More entries follow" or "More items follow" line. read: the file line to start at (not valid with sections); copy it from the "cut: continue with offset" line.`                                                                                                                                                                                                    |
@@ -307,8 +307,8 @@ separator: a space, `>`, and a space.
 
 A section address names a section. Its value is trimmed, then stripped, in this order and each at
 most once, of a leading `* `, a leading line range `<a>-<b> ` (`<a>` and `<b>` decimal integers,
-then one space), a trailing ` (+<k> hidden)` (`<k>` a decimal integer), and a trailing
-` (<n> lines)` (`<n>` a decimal integer). The stripped value
+then one space), a trailing ` (+<k> hidden)` (`<k>` a decimal integer), and—only when a line
+range was stripped—a trailing ` (<n> lines)` (`<n>` a decimal integer). The stripped value
 `(preamble)` names the preamble and `(document)` the document, where [validation](#validation) admits them,
 whether or not a line range was stripped. Any other stripped value is split at each occurrence of
 the separator into components, each trimmed and then stripped, at most once, of leading heading
@@ -422,7 +422,7 @@ then shortened: when the flattened text contains a sentence end (`.`, `!`, or `?
 zero or more of `"`, `'`, `)`, `]`, and then a space or the end of the flattened text) whose end
 is within its first 160 characters, it is cut right after that first sentence end; otherwise, when
 longer than 160 characters, it is cut to its first 160 characters followed by `…` (U+2026). A
-section with an empty own body has no preview line. `<lines>` is the file's line count, `<l>` the
+section with an empty own body, or whose flattened first paragraph is empty, has no preview line. `<lines>` is the file's line count, `<l>` the
 least level of the document's headings, the word `lines` staying plural whatever the number, and
 `<start>` and `<end>` of the frontmatter and preamble their first and last lines.
 
@@ -866,7 +866,7 @@ shipped file makes at runtime resolves under a clean install, either to a packag
   changed since.
 - The frontmatter cannot be named by an address; a copied `(frontmatter)` outline line names no
   section.
-- A heading whose text ends with ` (+<k> hidden)` or ` (<n> lines)` cannot be named by an address that ends with that text, because [section addresses](#section-addresses) strips those suffixes first.
+- A heading whose text ends with ` (+<k> hidden)` cannot be named by an address that ends with that text, because [section addresses](#section-addresses) strips that suffix first.
 - A heading whose text is `(preamble)` or `(document)` cannot be named by an address that is
   that text alone.
 - Two siblings whose components coincide, such as a heading written `X [2]` and the second of two
