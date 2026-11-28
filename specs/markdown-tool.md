@@ -789,7 +789,23 @@ While the host is still receiving the arguments, a value that is not yet a strin
 and `renderCall` MUST NOT throw. The component `renderCall` returns MUST carry no horizontal
 padding and no background of its own.
 
-## 8. Normative references {#normative-references}
+## 8. The published package {#published-package}
+
+A consumer installs the package with its `devDependencies` omitted, and the host packages it
+declares as peers come from the host itself: the host's extension loader aliases its own copies of
+them. A clean install of the published package — the files of its `package.json` `files` list, with
+`node_modules` holding only the packages of `dependencies` — is all a consumer gets, and both
+entries load from it alone: the library surface `index.ts` as a module import, and the
+[standalone entry](#standalone-entry) through the host's extension loader. Each bare import a
+shipped file makes at runtime resolves under a clean install, either to a package of
+`dependencies` or to a host module entrypoint the loader aliases; no shipped file imports a
+`devDependencies` package, and none imports a host-module subpath the loader does not alias.
+
+> Note (non-normative): a development checkout hides both failure modes: it installs every
+> `devDependencies` package, and an unaliased host-module subpath resolves against the real
+> package.
+
+## 9. Normative references {#normative-references}
 
 - [CommonMark] CommonMark Spec, version 0.31.2 (2024-01-28), J. MacFarlane: Section 2.1
   (characters, lines, line endings, blank lines), Sections 2.4 and 2.5 (backslash escapes, entity
@@ -802,7 +818,7 @@ padding and no background of its own.
 - [ECMA-262] ECMAScript Language Specification, 14th edition (June 2023), Ecma International:
   `String.prototype.toLowerCase` and `Number.isInteger`.
 
-## 9. Specification gaps {#specification-gaps}
+## 10. Specification gaps {#specification-gaps}
 
 - A heading whose text contains the separator of [section addresses](#section-addresses) cannot be named by an address that
   includes its text.
