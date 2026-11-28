@@ -4,6 +4,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   symlinkSync,
@@ -11,15 +12,17 @@ import {
 } from "node:fs";
 import { registerHooks } from "node:module";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname, join, relative } from "node:path";
 import { after, before, test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 /**
- * The published package loads from a clean install (specs/markdown-tool.md#published-package): the
- * host omits `devDependencies` and supplies the host packages itself through its loader's aliases.
- * The stage holds only `dependencies`, and its bare host-module imports resolve exactly where the
- * extension loader of the pinned @earendil-works/pi-coding-agent resolves them.
+ * The two-part guard of specs/markdown-tool.md#published-package: the package loads from a clean
+ * install (the host omits `devDependencies` and supplies the host packages itself through its
+ * loader's aliases), and every bare runtime import of `index.ts` and `lib/` names a package the
+ * manifest declares as a dependency or a peer. The stage holds only `dependencies`, and its bare
+ * host-module imports resolve exactly where the extension loader of the pinned
+ * @earendil-works/pi-coding-agent resolves them.
  */
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -149,4 +152,67 @@ test("the library surface loads from a clean install", async () => {
 test("the standalone entry loads from a clean install", async () => {
   const entry = await import(pathToFileURL(join(stageDir, "extension.ts")).href);
   assert.equal(typeof entry.default, "function");
+});
+
+/**
+ * The bare runtime import specifiers of `index.ts` and `lib/`, with the file each sits in:
+ * `import` and `export ... from` statements (no `type` ones, which the runtime erases), dynamic
+ * `import()`, and bare `import "x"`. Comments are stripped first, so a quoted example never
+ * matches.
+ */
+function bareRuntimeImports(): Array<[file: string, specifier: string]> {
+  const patterns = [
+    /\bimport\s+(?!type\b)[^;]*?\bfrom\s*["']([^"']+)["']/g,
+    /\bexport\s+(?!type\b)[^;]*?\bfrom\s*["']([^"']+)["']/g,
+    /\bimport\s*\(\s*["']([^"']+)["']\s*\)/g,
+    /\bimport\s+["']([^"']+)["']/g,
+  ];
+  const scanned = ["index.ts", ...filesUnder(join(root, "lib"))];
+  const found: Array<[file: string, specifier: string]> = [];
+  for (const file of scanned) {
+    const text = readFileSync(join(root, file), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, " ")
+      .replace(/^[ \t]*\/\/.*$/gm, "");
+    for (const pattern of patterns) {
+      for (const match of text.matchAll(pattern)) {
+        const specifier = match[1];
+        if (specifier !== undefined && isBare(specifier)) found.push([file, specifier]);
+      }
+    }
+  }
+  return found;
+}
+
+/** Whether a specifier names a package instead of a module of Node or of this package. */
+function isBare(specifier: string): boolean {
+  return !specifier.startsWith("node:") && !specifier.startsWith(".") && !specifier.startsWith("/");
+}
+
+/** The package name of a specifier: the whole name, or the two segments of a scoped package. */
+function packageNameOf(specifier: string): string {
+  const [first = "", second = ""] = specifier.split("/");
+  return first.startsWith("@") ? `${first}/${second}` : first;
+}
+
+/** The TypeScript and JavaScript files of a directory, recursively. */
+function filesUnder(directory: string): string[] {
+  return readdirSync(directory, { recursive: true, withFileTypes: true })
+    .filter((entry) => entry.isFile() && /\.(?:[cm]?[jt]s)$/.test(entry.name))
+    .map((entry) => relative(root, join(entry.parentPath, entry.name)));
+}
+
+test("every bare runtime import of index.ts and lib/ names a dependency or peer", () => {
+  // specs/markdown-tool.md#published-package: no shipped file imports a devDependencies package or
+  // a host-module subpath the loader does not alias, so each bare import names what the manifest
+  // declares.
+  const bare = bareRuntimeImports();
+  assert.ok(bare.length > 0, "the scan found no bare runtime imports");
+  const declared = { ...manifest.dependencies, ...manifest.peerDependencies };
+  for (const [file, specifier] of bare) {
+    const name = packageNameOf(specifier);
+    assert.ok(
+      name in declared,
+      `${file}: "${specifier}" names "${name}", no dependency or peer of the manifest`,
+    );
+  }
 });
