@@ -101,9 +101,13 @@ test("specs/markdown-tool.md#parsing: an outline shows the id attribute in the e
     const name = write(dir, "a.md", SPEC);
     const outcome = await call(runtime(), dir, { action: "outline", path: name, depth: 3 });
     assert.equal(outcome.isError, false, outcome.text);
-    assert.equal(outcome.lines.includes("7-11 ## 5. Checks {#checks}"), true, outcome.text);
     assert.equal(
-      outcome.lines.includes("9-11 ### 5.1 File checks {#file-checks}"),
+      outcome.lines.includes("7-11 ## 5. Checks {#checks} (5 lines)"),
+      true,
+      outcome.text,
+    );
+    assert.equal(
+      outcome.lines.includes("9-11 ### 5.1 File checks {#file-checks} (3 lines)"),
       true,
       outcome.text,
     );

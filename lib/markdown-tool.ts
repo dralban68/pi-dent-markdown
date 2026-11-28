@@ -55,7 +55,7 @@ export type ToolResult = AgentToolResult<Record<string, unknown>>;
 
 /** The tool's `description` (specs/markdown-tool.md#model-facing-texts). */
 export const MARKDOWN_DESCRIPTION =
-  'Outline, read, and restructure a Markdown file by its headings; use it instead of the `read` tool for Markdown files. For a long file, outline first and read only the sections you need. Its outline action lists the sections with their line ranges; read returns one section; links lists the links, images, autolinks, and link definitions of the file or a section with their lines and destinations, plus unused definitions and references to missing ones, for you to check, and checks no target itself; edit replaces, inserts, deletes, moves, renames, or re-levels whole sections without quoting their old text, fits each placed section to the level of its new place, and applies its operations in order, all or none. Name a section by its heading text, its number ("3.1", "§3.1"), or a line copied from an outline or edit result; when that is not unique, put ancestor headings before it, joined by " > ". Numbered headings ("3.", "3.1") are renumbered to stay in sequence, and a section placed among them without a number gets one; a later operation of the same call names a renumbered section by its text without the number. To change words inside a section, use the `edit` tool.';
+  'Outline, read, and restructure a Markdown file by its headings; use it instead of the `read` tool for Markdown files. For a long file, outline first and read only the sections you need. Its outline action lists the sections with their line ranges; read returns one or more sections; links lists the links, images, autolinks, and link definitions of the file or a section with their lines and destinations, plus unused definitions and references to missing ones, for you to check, and checks no target itself; edit replaces, inserts, deletes, moves, renames, or re-levels whole sections without quoting their old text, fits each placed section to the level of its new place, and applies its operations in order, all or none. Name a section by its heading text, its number ("3.1", "§3.1"), or a line copied from an outline or edit result; when that is not unique, put ancestor headings before it, joined by " > ". Numbered headings ("3.", "3.1") are renumbered to stay in sequence, and a section placed among them without a number gets one; a later operation of the same call names a renumbered section by its text without the number. To change words inside a section, use the `edit` tool.';
 
 /** The tool's `promptSnippet` (specs/markdown-tool.md#model-facing-texts). */
 export const MARKDOWN_PROMPT_SNIPPET =
@@ -64,17 +64,19 @@ export const MARKDOWN_PROMPT_SNIPPET =
 /** The `description` of each parameter, verbatim from specs/markdown-tool.md#model-facing-texts. */
 export const MARKDOWN_PARAMETER_DESCRIPTIONS = {
   action:
-    "outline: list the sections with their line ranges. read: return one section's text. edit: apply structural operations. links: list the links and their destinations.",
+    "outline: list the sections with their line ranges. read: return one or more sections' text. edit: apply structural operations. links: list the links and their destinations.",
   path: "Path to the Markdown file (relative or absolute).",
   section:
-    "outline and links: only this section and its subsections. read: required, the section to return; (preamble) names the text before the first heading, for read and links.",
+    "outline and links: only this section and its subsections. read: the section to return (required unless sections is given); (preamble) names the text before the first heading, for read and links.",
+  sections:
+    "For read: multiple sections to return in one call, sharing the line and character budget; exclusive with section and offset.",
   depth:
     "A heading level, 1 to 6. outline: the deepest level listed (1: # only, 2: # and ##, and so on); default: the deepest that fits in limit or 100 entries, whichever is greater. read: subsections deeper than this level are shown as their heading only.",
-  preview: "For outline: true also shows the first line under each heading. Default false.",
+  preview: "For outline: true also shows a short preview of each section's body. Default false.",
   offset:
-    'outline and links: how many entries or items to skip; copy it from the "More entries follow" or "More items follow" line. read: the file line to start at; copy it from the "cut: continue with offset" line.',
+    'outline and links: how many entries or items to skip; copy it from the "More entries follow" or "More items follow" line. read: the file line to start at (not valid with sections); copy it from the "cut: continue with offset" line.',
   limit:
-    "outline and links: the most entries or items to list, 1 to 500, default 100. read: the most lines to return, 1 to 2000, default 500.",
+    "outline and links: the most entries or items to list, 1 to 500, default 100. read: the most lines to return, 1 to 2000, default 500 (shared across sections).",
   revision:
     "Required for edit: the revision shown by your latest outline, read, or edit of this file.",
   operations:
@@ -138,6 +140,11 @@ export const markdownParameterSchema: TSchema = Type.Object(
     path: Type.String({ description: DESCRIPTIONS.path }),
     section: Type.Optional(
       Type.Union([Type.String(), Type.Null()], { description: DESCRIPTIONS.section }),
+    ),
+    sections: Type.Optional(
+      Type.Union([Type.Array(Type.String(), { minItems: 1 }), Type.Null()], {
+        description: DESCRIPTIONS.sections,
+      }),
     ),
     depth: Type.Optional(
       Type.Union([Type.Number(), Type.Null()], { description: DESCRIPTIONS.depth }),
@@ -564,7 +571,12 @@ export function renderMarkdownCallLines(args: unknown): string[] {
   if (typeof path === "string") parts.push(path);
   let head = parts.join(" ");
   const section = fields.section;
-  if (typeof section === "string") head += ` \u203a ${section}`;
+  if (typeof section === "string") {
+    head += ` \u203a ${section}`;
+  } else if (Array.isArray(fields.sections)) {
+    const names = fields.sections.filter((item): item is string => typeof item === "string");
+    if (names.length > 0) head += ` \u203a ${names.join(", ")}`;
+  }
   const lines: string[] = [head];
   const operations = fields.operations;
   if (Array.isArray(operations)) {

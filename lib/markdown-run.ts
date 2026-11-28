@@ -66,7 +66,7 @@ const OUTLINE_LIMIT = 100;
 const READ_LIMIT = 500;
 
 /** The longest preview line's text, in characters (specs/markdown-tool.md#action-outline). */
-const PREVIEW_LENGTH = 100;
+const PREVIEW_LENGTH = 160;
 
 /** The most characters a `read` returns (specs/markdown-tool.md#action-read). */
 const READ_CHARACTERS = 50000;
@@ -84,6 +84,7 @@ const OUTLINE_ENTRIES = 500;
 /** The parameter fields in the table order of specs/markdown-tool.md#parameters, `action` and `path` excluded. */
 const FIELD_ORDER = [
   "section",
+  "sections",
   "depth",
   "preview",
   "offset",
@@ -98,7 +99,7 @@ const OP_FIELD_ORDER = ["section", "position", "at", "content", "heading", "leve
 /** The fields each action accepts (specs/markdown-tool.md#parameters). */
 const ACCEPTED: Readonly<Record<string, ReadonlySet<string>>> = {
   outline: new Set(["section", "depth", "preview", "offset", "limit"]),
-  read: new Set(["section", "depth", "offset", "limit"]),
+  read: new Set(["section", "sections", "depth", "offset", "limit"]),
   links: new Set(["section", "offset", "limit"]),
   edit: new Set(["revision", "operations"]),
 };
@@ -323,7 +324,8 @@ export type ValidatedCall =
   | {
       kind: "read";
       path: string;
-      section: string;
+      section: string | undefined;
+      sections: readonly string[] | undefined;
       depth: number | undefined;
       offset: number | undefined;
       limit: number;
@@ -353,22 +355,48 @@ export function checkMarkdownCall(params: unknown): ValidatedCall {
     return { kind: "error", message: "path must be a non-empty string" };
   }
   const sectionValue = present(fields, "section");
+  const sectionsValue = present(fields, "sections");
   const section = trimmedText(sectionValue);
-  if (action === "read" && (section === undefined || section === "")) {
+  let sections: string[] | undefined;
+  if (action === "read") {
+    if (sectionValue !== undefined && sectionsValue !== undefined) {
+      return { kind: "error", message: "section and sections cannot both be given" };
+    }
+    if (sectionValue === undefined && sectionsValue === undefined) {
+      return { kind: "error", message: "read requires section or sections" };
+    }
+  }
+  if (sectionValue !== undefined && (section === undefined || section === "")) {
     return { kind: "error", message: "section must be a non-empty string" };
   }
-  if (
-    (action === "outline" || action === "links") &&
-    sectionValue !== undefined &&
-    section === ""
-  ) {
-    return { kind: "error", message: "section must be a non-empty string" };
+  if (sectionsValue !== undefined) {
+    if (!Array.isArray(sectionsValue) || sectionsValue.length === 0) {
+      return { kind: "error", message: "sections must be a non-empty array of strings" };
+    }
+    sections = [];
+    for (let index = 0; index < sectionsValue.length; index += 1) {
+      const element = trimmedText(sectionsValue[index]);
+      if (element === undefined || element === "") {
+        return { kind: "error", message: `sections[${index}] must be a non-empty string` };
+      }
+      sections.push(element);
+    }
   }
   if (isNamed(section, "(document)")) {
     return { kind: "error", message: `(document) is not valid as the section of ${action}` };
   }
   if (action === "outline" && isNamed(section, "(preamble)")) {
     return { kind: "error", message: `(preamble) is not valid as the section of ${action}` };
+  }
+  if (sections !== undefined) {
+    for (let index = 0; index < sections.length; index += 1) {
+      if (isNamed(sections[index], "(document)")) {
+        return {
+          kind: "error",
+          message: `sections[${index}]: (document) is not valid as the section of read`,
+        };
+      }
+    }
   }
   const depthValue = present(fields, "depth");
   let depth: number | undefined;
@@ -388,6 +416,9 @@ export function checkMarkdownCall(params: unknown): ValidatedCall {
       offset = offsetValue;
     }
     if (action === "read") {
+      if (sections !== undefined) {
+        return { kind: "error", message: "offset is not valid with sections" };
+      }
       if (typeof offsetValue !== "number" || !Number.isInteger(offsetValue) || offsetValue <= 0) {
         return { kind: "error", message: "offset must be a positive integer" };
       }
@@ -425,7 +456,8 @@ export function checkMarkdownCall(params: unknown): ValidatedCall {
     return {
       kind: "read",
       path,
-      section: section ?? "",
+      section,
+      sections,
       depth,
       offset,
       limit: limit ?? READ_LIMIT,
@@ -519,9 +551,10 @@ function outlineResult(
     const section = model.sections[index];
     if (section === undefined) continue;
     const hidden = countHidden(model, section.index, entrySet);
+    const lineCount = section.end - section.start + 1;
     const hiddenText = hidden > 0 ? ` (+${hidden} hidden)` : "";
     lines.push(
-      `${section.start}-${section.end} ${"#".repeat(section.level)} ${section.component}${hiddenText}`,
+      `${section.start}-${section.end} ${"#".repeat(section.level)} ${section.component} (${lineCount} lines)${hiddenText}`,
     );
     const detail: Record<string, unknown> = {
       address: section.address,
@@ -566,12 +599,52 @@ function outlineResult(
   return { text: lines.join("\n"), details, isError: false };
 }
 
+interface ReadTarget {
+  start: number;
+  end: number;
+  address: string;
+  level: number | null;
+  addressed: number | undefined;
+}
+
+function resolveReadTarget(
+  model: DocModel,
+  target: string,
+  display: string,
+): ReadTarget | { error: string } {
+  if (stripAddress(target) === "(preamble)") {
+    const preamble = model.preamble;
+    if (preamble === undefined) return { error: `${display} has no preamble` };
+    return {
+      start: preamble.start,
+      end: preamble.end,
+      address: "(preamble)",
+      level: null,
+      addressed: undefined,
+    };
+  }
+  const resolved = resolveForRead(model, target, display);
+  if ("error" in resolved) return resolved;
+  const section = model.sections[resolved.index];
+  if (section === undefined) {
+    return { error: noSectionMessage(model, target, display) };
+  }
+  return {
+    start: section.start,
+    end: section.end,
+    address: section.address,
+    level: section.level,
+    addressed: section.index,
+  };
+}
+
 export /** The result of a `read` call (specs/markdown-tool.md#action-read). */
 function readResult(
   loaded: LoadedText,
   validated: {
     path: string;
-    section: string;
+    section: string | undefined;
+    sections: readonly string[] | undefined;
     depth: number | undefined;
     offset: number | undefined;
     limit: number;
@@ -580,31 +653,91 @@ function readResult(
   absolute: string,
 ): MarkdownReply {
   const model = analyzeDocument(loaded.lines);
-  let start: number;
-  let end: number;
-  let address: string;
-  let level: number | null;
-  let addressed: number | undefined;
-  if (stripAddress(validated.section) === "(preamble)") {
-    const preamble = model.preamble;
-    if (preamble === undefined) return failure(`${display} has no preamble`);
-    start = preamble.start;
-    end = preamble.end;
-    address = "(preamble)";
-    level = null;
-  } else {
-    const resolved = resolveForRead(model, validated.section, display);
-    if ("error" in resolved) return failure(resolved.error);
-    const section = model.sections[resolved.index];
-    if (section === undefined) {
-      return failure(noSectionMessage(model, validated.section, display));
+  if (validated.sections !== undefined) {
+    const targets: ReadTarget[] = [];
+    for (const entry of validated.sections) {
+      const resolved = resolveReadTarget(model, entry, display);
+      if ("error" in resolved) return failure(resolved.error);
+      targets.push(resolved);
     }
-    addressed = section.index;
-    start = section.start;
-    end = section.end;
-    address = section.address;
-    level = section.level;
+    const parts: string[] = [];
+    const sectionDetails: Record<string, unknown>[] = [];
+    let remainingLines = validated.limit;
+    let remainingChars = READ_CHARACTERS;
+    let totalShownLines = 0;
+    for (const target of targets) {
+      const display_ = displayLines(
+        model,
+        loaded.lines,
+        target.addressed,
+        validated.depth,
+        target.start,
+        target.end,
+      );
+      const shown: DisplayLine[] = [];
+      let position = 0;
+      while (position < display_.length && remainingLines > 0) {
+        const line = display_[position];
+        if (line === undefined) break;
+        if (totalShownLines === 0 && shown.length === 0) {
+          const text =
+            line.text.length > READ_CHARACTERS
+              ? `${line.text.slice(0, READ_CHARACTERS)}\u2026`
+              : line.text;
+          shown.push({ first: line.first, last: line.last, text });
+          remainingChars = Math.max(0, READ_CHARACTERS - text.length);
+          remainingLines -= 1;
+          totalShownLines += 1;
+          position += 1;
+          continue;
+        }
+        const cost = 1 + line.text.length;
+        if (cost > remainingChars) break;
+        shown.push(line);
+        remainingChars -= cost;
+        remainingLines -= 1;
+        totalShownLines += 1;
+        position += 1;
+      }
+      parts.push(
+        `${display} \u00b7 ${target.address} \u00b7 lines ${target.start}-${target.end} \u00b7 revision ${loaded.revision}`,
+      );
+      for (const line of shown) parts.push(line.text);
+      const next = display_[position];
+      if (next === undefined) {
+        parts.push("--- end of section ---");
+      } else {
+        parts.push(`--- cut: continue with offset ${next.first} ---`);
+      }
+      const firstShown = shown[0];
+      const lastShown = shown[shown.length - 1];
+      const entryDetail: Record<string, unknown> = {
+        address: target.address,
+        level: target.level,
+        start: target.start,
+        end: target.end,
+      };
+      if (firstShown !== undefined && lastShown !== undefined) {
+        entryDetail.from = firstShown.first;
+        entryDetail.to = lastShown.last;
+      }
+      if (next !== undefined) entryDetail.next = next.first;
+      sectionDetails.push(entryDetail);
+    }
+    return {
+      text: parts.join("\n"),
+      details: {
+        action: "read",
+        path: absolute,
+        revision: loaded.revision,
+        sections: sectionDetails,
+      },
+      isError: false,
+    };
   }
+  const resolved = resolveReadTarget(model, validated.section ?? "", display);
+  if ("error" in resolved) return failure(resolved.error);
+  const { start, end, address, level, addressed } = resolved;
   const offset = validated.offset ?? start;
   if (offset < start || offset > end) {
     return failure(`offset ${offset} is outside ${address} (lines ${start}-${end})`);
@@ -789,12 +922,26 @@ function defaultDepth(model: DocModel, candidates: readonly number[], limit: num
   return depth ?? levels[0] ?? 6;
 }
 
-/** The preview line of a section: the first line of its own body, flattened and cut (specs/markdown-tool.md#action-outline). */
+/** Sentence end in flattened preview text (specs/markdown-tool.md#action-outline). */
+const SENTENCE_END = /[.!?]["')\]]*(?=\s|$)/;
+
+/** The preview line of a section: the first paragraph/sentence of its own body, flattened and cut (specs/markdown-tool.md#action-outline). */
 function previewOf(lines: readonly TextLine[], section: DocSection): string | undefined {
   if (section.bodyStart === undefined) return;
-  const line = lines[section.bodyStart - 1];
-  if (line === undefined) return;
-  const flattened = flattenText(line.text);
+  const bodyEnd = section.bodyEnd ?? section.end;
+  const paragraph: string[] = [];
+  for (let number = section.bodyStart; number <= bodyEnd; number += 1) {
+    const line = lines[number - 1];
+    if (line === undefined || isBlank(line.text)) break;
+    paragraph.push(line.text);
+  }
+  const flattened = flattenText(paragraph.join("\n"));
+  if (flattened === "") return;
+  const sentence = SENTENCE_END.exec(flattened);
+  if (sentence !== null) {
+    const end = sentence.index + sentence[0].length;
+    if (end <= PREVIEW_LENGTH) return flattened.slice(0, end);
+  }
   return flattened.length > PREVIEW_LENGTH
     ? `${flattened.slice(0, PREVIEW_LENGTH)}\u2026`
     : flattened;

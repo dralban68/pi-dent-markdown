@@ -95,6 +95,7 @@ test("every parameter and operation property carries its specs/markdown-tool.md#
     "action",
     "path",
     "section",
+    "sections",
     "depth",
     "preview",
     "offset",
@@ -149,6 +150,7 @@ test("the schema admits exactly the specs/markdown-tool.md#parameters properties
     "preview",
     "revision",
     "section",
+    "sections",
   ]);
   const element = markdownOperationSchema as unknown as Record<string, unknown>;
   assert.equal(element.additionalProperties, false);

@@ -73,13 +73,13 @@ const PARSING_FIXTURE = [
 test("specs/markdown-tool.md#parsing: code blocks, quotes, lists, and HTML blocks hold no heading", async () => {
   try {
     assert.deepEqual(await bodyOf(PARSING_FIXTURE), [
-      "1-32 # Top",
-      "5-10 ## Fence",
-      "12-14 ## Quote",
-      "16-20 ## List",
-      "22-26 ## Html",
-      "28-30 ## Indented",
-      "32-32 ## Last",
+      "1-32 # Top (32 lines)",
+      "5-10 ## Fence (6 lines)",
+      "12-14 ## Quote (3 lines)",
+      "16-20 ## List (5 lines)",
+      "22-26 ## Html (5 lines)",
+      "28-30 ## Indented (3 lines)",
+      "32-32 ## Last (1 lines)",
     ]);
   } finally {
     cleanupRoots();
@@ -88,10 +88,10 @@ test("specs/markdown-tool.md#parsing: code blocks, quotes, lists, and HTML block
 
 test("specs/markdown-tool.md#parsing: setext headings take their level from the underline and keep their content lines", async () => {
   try {
-    assert.deepEqual(await bodyOf("Title\n=====\n\ntext\n"), ["1-4 # Title"]);
-    assert.deepEqual(await bodyOf("Section\n-------\n\ntext\n"), ["1-4 ## Section"]);
-    assert.deepEqual(await bodyOf("Foo\nbar\n===\n\ntext\n"), ["1-5 # Foo bar"]);
-    assert.deepEqual(await bodyOf("  Foo  \n  bar\t\n---\n"), ["1-3 ## Foo bar"]);
+    assert.deepEqual(await bodyOf("Title\n=====\n\ntext\n"), ["1-4 # Title (4 lines)"]);
+    assert.deepEqual(await bodyOf("Section\n-------\n\ntext\n"), ["1-4 ## Section (4 lines)"]);
+    assert.deepEqual(await bodyOf("Foo\nbar\n===\n\ntext\n"), ["1-5 # Foo bar (5 lines)"]);
+    assert.deepEqual(await bodyOf("  Foo  \n  bar\t\n---\n"), ["1-3 ## Foo bar (3 lines)"]);
   } finally {
     cleanupRoots();
   }
@@ -99,16 +99,16 @@ test("specs/markdown-tool.md#parsing: setext headings take their level from the 
 
 test("specs/markdown-tool.md#parsing: an ATX heading's text is its raw contents, kept as written", async () => {
   const cases: [string, string[]][] = [
-    ["## foo ##\n", ["1-1 ## foo"]],
-    ["# foo#\n", ["1-1 # foo#"]],
-    ["### foo \\###\n", ["1-1 ### foo \\###"]],
-    ["# foo ##################################\n", ["1-1 # foo"]],
-    ["# foo ### b\n", ["1-1 # foo ### b"]],
-    ["#\n", ["1-1 # (untitled)"]],
-    ["# *Emphasis* and `code` and &amp;\n", ["1-1 # *Emphasis* and `code` and &amp;"]],
+    ["## foo ##\n", ["1-1 ## foo (1 lines)"]],
+    ["# foo#\n", ["1-1 # foo# (1 lines)"]],
+    ["### foo \\###\n", ["1-1 ### foo \\### (1 lines)"]],
+    ["# foo ##################################\n", ["1-1 # foo (1 lines)"]],
+    ["# foo ### b\n", ["1-1 # foo ### b (1 lines)"]],
+    ["#\n", ["1-1 # (untitled) (1 lines)"]],
+    ["# *Emphasis* and `code` and &amp;\n", ["1-1 # *Emphasis* and `code` and &amp; (1 lines)"]],
     ["####### foo\n", ["1-1 (preamble)", "(no headings)"]],
     ["#5 bolt\n", ["1-1 (preamble)", "(no headings)"]],
-    ["   # three\n", ["1-1 # three"]],
+    ["   # three\n", ["1-1 # three (1 lines)"]],
   ];
   try {
     for (const [text, expected] of cases) {
@@ -122,7 +122,7 @@ test("specs/markdown-tool.md#parsing: an ATX heading's text is its raw contents,
 test("specs/markdown-tool.md#parsing: a table followed by a thematic break makes no setext heading", async () => {
   try {
     const text = ["| a | b |", "| - | - |", "| 1 | 2 |", "---", "", "# After", ""].join("\n");
-    assert.deepEqual(await bodyOf(text), ["1-4 (preamble)", "6-6 # After"]);
+    assert.deepEqual(await bodyOf(text), ["1-4 (preamble)", "6-6 # After (1 lines)"]);
   } finally {
     cleanupRoots();
   }
@@ -132,14 +132,14 @@ const DEFINED_SETEXT = "[foo]: /url\nBar\n===\n\nSee [foo].\n";
 
 test("specs/markdown-tool.md#parsing: a setext heading after link reference definitions starts at its content line", async () => {
   try {
-    assert.deepEqual(await bodyOf(DEFINED_SETEXT), ["1-1 (preamble)", "2-5 # Bar"]);
+    assert.deepEqual(await bodyOf(DEFINED_SETEXT), ["1-1 (preamble)", "2-5 # Bar (4 lines)"]);
     assert.deepEqual(await bodyOf("[a]: /x\n[b]: /y\nBar\n---\n"), [
       "1-2 (preamble)",
-      "3-4 ## Bar",
+      "3-4 ## Bar (2 lines)",
     ]);
     assert.deepEqual(await bodyOf('[a]: /x\n"t"\n  Bar *x*\n===\n'), [
       "1-2 (preamble)",
-      "3-4 # Bar *x*",
+      "3-4 # Bar *x* (2 lines)",
     ]);
     assert.deepEqual(await bodyOf("[a]: /x\n===\n"), ["1-2 (preamble)", "(no headings)"]);
   } finally {
@@ -190,17 +190,20 @@ test("specs/markdown-tool.md#parsing: frontmatter is line 1 through the first la
   try {
     assert.deepEqual(await bodyOf(["---", "title: x", "---", "", "# A", ""].join("\n")), [
       "1-3 (frontmatter)",
-      "5-5 # A",
+      "5-5 # A (1 lines)",
     ]);
     assert.deepEqual(await bodyOf(["---", "title: x", "", "# A", ""].join("\n")), [
       "1-2 (preamble)",
-      "4-4 # A",
+      "4-4 # A (1 lines)",
     ]);
     assert.deepEqual(await bodyOf(["---  ", "x", "---\t", ""].join("\n")), [
       "1-3 (frontmatter)",
       "(no headings)",
     ]);
-    assert.deepEqual(await bodyOf([" ---", "x", "---"].join("\n")), ["1-1 (preamble)", "2-3 ## x"]);
+    assert.deepEqual(await bodyOf([" ---", "x", "---"].join("\n")), [
+      "1-1 (preamble)",
+      "2-3 ## x (2 lines)",
+    ]);
   } finally {
     cleanupRoots();
   }
@@ -212,11 +215,14 @@ test("specs/markdown-tool.md#file-access: a leading U+FEFF is not part of line 1
     writeFileSync(`${dir}/bom.md`, new Uint8Array([0xef, 0xbb, 0xbf, 0x23, 0x20, 0x41, 0x0a]));
     const bom = await call(runtime(), dir, { action: "outline", path: "bom.md" });
     assert.equal(bom.isError, false, bom.text);
-    assert.deepEqual(bom.lines.slice(1), ["1-1 # A"]);
+    assert.deepEqual(bom.lines.slice(1), ["1-1 # A (1 lines)"]);
 
-    assert.deepEqual(await bodyOf("# A\r\n\r\n## B\r\n"), ["1-3 # A", "3-3 ## B"]);
-    assert.deepEqual(await bodyOf("# A\r\r## B\r"), ["1-3 # A", "3-3 ## B"]);
-    assert.deepEqual(await bodyOf("# A\r\n\r## B\n"), ["1-3 # A", "3-3 ## B"]);
+    assert.deepEqual(await bodyOf("# A\r\n\r\n## B\r\n"), [
+      "1-3 # A (3 lines)",
+      "3-3 ## B (1 lines)",
+    ]);
+    assert.deepEqual(await bodyOf("# A\r\r## B\r"), ["1-3 # A (3 lines)", "3-3 ## B (1 lines)"]);
+    assert.deepEqual(await bodyOf("# A\r\n\r## B\n"), ["1-3 # A (3 lines)", "3-3 ## B (1 lines)"]);
   } finally {
     cleanupRoots();
   }
@@ -256,7 +262,11 @@ test("specs/markdown-tool.md#sections: a section ends at its last non-blank line
     const text = ["# A", "", "text", "", "### B", "", "text", "", "## C", "", "text", "", ""].join(
       "\n",
     );
-    assert.deepEqual(await bodyOf(text), ["1-11 # A", "5-7 ### B", "9-11 ## C"]);
+    assert.deepEqual(await bodyOf(text), [
+      "1-11 # A (11 lines)",
+      "5-7 ### B (3 lines)",
+      "9-11 ## C (3 lines)",
+    ]);
   } finally {
     cleanupRoots();
   }
@@ -266,11 +276,11 @@ test("specs/markdown-tool.md#sections: the preamble is the text before the first
   try {
     assert.deepEqual(await bodyOf(["intro", "", "# A", "", "text", ""].join("\n")), [
       "1-1 (preamble)",
-      "3-5 # A",
+      "3-5 # A (3 lines)",
     ]);
     assert.deepEqual(await bodyOf(["", "", "intro", "more", "", "# A", ""].join("\n")), [
       "3-4 (preamble)",
-      "6-6 # A",
+      "6-6 # A (1 lines)",
     ]);
     assert.deepEqual(await bodyOf(["intro", "", "text", ""].join("\n")), [
       "1-3 (preamble)",
@@ -305,12 +315,12 @@ test("specs/markdown-tool.md#section-addresses: components carry ` [<n>]` for re
   try {
     const text = ["# A", "", "## X", "", "## X", "", "## X", "", "# B", "", "## X", ""].join("\n");
     assert.deepEqual(await bodyOf(text), [
-      "1-7 # A",
-      "3-3 ## X",
-      "5-5 ## X [2]",
-      "7-7 ## X [3]",
-      "9-11 # B",
-      "11-11 ## X",
+      "1-7 # A (7 lines)",
+      "3-3 ## X (1 lines)",
+      "5-5 ## X [2] (1 lines)",
+      "7-7 ## X [3] (1 lines)",
+      "9-11 # B (3 lines)",
+      "11-11 ## X (1 lines)",
     ]);
   } finally {
     cleanupRoots();
@@ -319,7 +329,10 @@ test("specs/markdown-tool.md#section-addresses: components carry ` [<n>]` for re
 
 test("specs/markdown-tool.md#section-addresses: an empty heading text is (untitled)", async () => {
   try {
-    assert.deepEqual(await bodyOf("#\n\n##\n"), ["1-3 # (untitled)", "3-3 ## (untitled)"]);
+    assert.deepEqual(await bodyOf("#\n\n##\n"), [
+      "1-3 # (untitled) (3 lines)",
+      "3-3 ## (untitled) (1 lines)",
+    ]);
   } finally {
     cleanupRoots();
   }
@@ -404,7 +417,7 @@ test("specs/markdown-tool.md#parsing: an outline shows a heading's line range an
       `${name} · 9 lines · revision ${must(outcome.details.revision)} · depth 1`,
       "1-3 (frontmatter)",
       "5-5 (preamble)",
-      "7-9 # A",
+      "7-9 # A (3 lines)",
     ]);
     assert.deepEqual(outcome.details.frontmatter, { start: 1, end: 3 });
     assert.deepEqual(outcome.details.preamble, { start: 5, end: 5 });

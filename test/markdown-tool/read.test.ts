@@ -246,3 +246,68 @@ test("specs/markdown-tool.md#action-read: an unknown or ambiguous address is a t
   assert.equal(suggestion.isError, true);
   assert.equal(suggestion.text, 'no section "B" in a.md. Similar: Doc > One > One B');
 });
+
+test("specs/markdown-tool.md#action-read: sections reads multiple sections in order with one shared budget", async () => {
+  const outcome = await read(DOCUMENT, { sections: ["One A", "Two"] });
+  const revision = must(outcome.details.revision);
+  assert.equal(outcome.isError, false, outcome.text);
+  assert.deepEqual(outcome.lines, [
+    `a.md · Doc > One > One A · lines 9-11 · revision ${revision}`,
+    "### One A",
+    "",
+    "text a",
+    "--- end of section ---",
+    `a.md · Doc > Two · lines 17-19 · revision ${revision}`,
+    "## Two",
+    "",
+    "body two",
+    "--- end of section ---",
+  ]);
+  assert.deepEqual(outcome.details, {
+    action: "read",
+    path: must(outcome.details.path),
+    revision,
+    sections: [
+      { address: "Doc > One > One A", level: 3, start: 9, end: 11, from: 9, to: 11 },
+      { address: "Doc > Two", level: 2, start: 17, end: 19, from: 17, to: 19 },
+    ],
+  });
+});
+
+test("specs/markdown-tool.md#action-read: sections shares limit and 50000-character budget across sections", async () => {
+  const outcome = await read(DOCUMENT, { sections: ["One A", "One B", "Two"], limit: 4 });
+  const revision = must(outcome.details.revision);
+  assert.equal(outcome.isError, false, outcome.text);
+  assert.deepEqual(outcome.lines, [
+    `a.md · Doc > One > One A · lines 9-11 · revision ${revision}`,
+    "### One A",
+    "",
+    "text a",
+    "--- end of section ---",
+    `a.md · Doc > One > One B · lines 13-15 · revision ${revision}`,
+    "### One B",
+    "--- cut: continue with offset 14 ---",
+    `a.md · Doc > Two · lines 17-19 · revision ${revision}`,
+    "--- cut: continue with offset 17 ---",
+  ]);
+  assert.deepEqual(outcome.details.sections, [
+    { address: "Doc > One > One A", level: 3, start: 9, end: 11, from: 9, to: 11 },
+    { address: "Doc > One > One B", level: 3, start: 13, end: 15, from: 13, to: 13, next: 14 },
+    { address: "Doc > Two", level: 2, start: 17, end: 19, next: 17 },
+  ]);
+
+  const big = "x".repeat(30000);
+  const text = ["# A", "", big, "", "# B", "", big, ""].join("\n");
+  const capped = await read(text, { sections: ["A", "B"] });
+  assert.equal(capped.isError, false, capped.text);
+  assert.deepEqual(capped.details.sections, [
+    { address: "A", level: 1, start: 1, end: 3, from: 1, to: 3 },
+    { address: "B", level: 1, start: 5, end: 7, from: 5, to: 6, next: 7 },
+  ]);
+});
+
+test("specs/markdown-tool.md#action-read: sections rejects the call if any address fails to resolve", async () => {
+  const outcome = await read(DOCUMENT, { sections: ["One A", "Missing"] });
+  assert.equal(outcome.isError, true);
+  assert.equal(outcome.text, 'no section "Missing" in a.md. Run outline to list its sections.');
+});

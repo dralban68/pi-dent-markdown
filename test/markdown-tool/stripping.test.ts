@@ -76,10 +76,16 @@ test("specs/markdown-tool.md#section-addresses: leading heading marks `#{1,6} ` 
   assert.equal(doubled.text, 'no section "## ## One A" in a.md. Run outline to list its sections.');
 });
 
-test("specs/markdown-tool.md#section-addresses: a trailing ` (+<k> hidden)` is stripped from an address", async () => {
+test("specs/markdown-tool.md#section-addresses: a trailing ` (+<k> hidden)` and ` (<n> lines)` are stripped from an address", async () => {
   const outcome = await read(NESTED, "One (+2 hidden)");
   assert.equal(outcome.isError, false);
   assert.equal(outcome.address, "Doc > One");
+  const withLines = await read(NESTED, "3-7 ## One (5 lines) (+1 hidden)");
+  assert.equal(withLines.isError, false);
+  assert.equal(withLines.address, "Doc > One");
+  const linesOnly = await read(NESTED, "5-7 ### One A (3 lines)");
+  assert.equal(linesOnly.isError, false);
+  assert.equal(linesOnly.address, "Doc > One > One A");
 });
 
 test("specs/markdown-tool.md#section-addresses: the stripping runs in order, after the trim, on the whole value", async () => {

@@ -227,7 +227,7 @@ test("specs/markdown-tool.md#section-addresses: outline takes a line range too",
       section: "9-11 Dup",
     });
     assert.equal(outcome.isError, false);
-    assert.equal(outcome.lines.includes("9-11 ## Dup"), true);
+    assert.equal(outcome.lines.includes("9-11 ## Dup (3 lines)"), true);
   } finally {
     cleanupRoots();
   }

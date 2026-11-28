@@ -159,7 +159,7 @@ for (const relative of FILES) {
         shallow.outcome.lines.slice(1),
         shallow.entries.map(
           (entry) =>
-            `${entry.start}-${entry.end} ${"#".repeat(entry.level)} ${componentOf(entry.address)}${
+            `${entry.start}-${entry.end} ${"#".repeat(entry.level)} ${componentOf(entry.address)} (${entry.end - entry.start + 1} lines)${
               entry.hidden > 0 ? ` (+${entry.hidden} hidden)` : ""
             }`,
         ),

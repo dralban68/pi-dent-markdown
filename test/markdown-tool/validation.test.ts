@@ -71,9 +71,34 @@ const cases: Case[] = [
     error: "section must be a non-empty string",
   },
   {
-    name: "read without section",
+    name: "read without section or sections",
     params: { action: "read", path: head },
-    error: "section must be a non-empty string",
+    error: "read requires section or sections",
+  },
+  {
+    name: "read with both section and sections",
+    params: { action: "read", path: head, section: "A", sections: ["A"] },
+    error: "section and sections cannot both be given",
+  },
+  {
+    name: "read with an empty sections array",
+    params: { action: "read", path: head, sections: [] },
+    error: "sections must be a non-empty array of strings",
+  },
+  {
+    name: "read with a blank element in sections",
+    params: { action: "read", path: head, sections: ["A", "  "] },
+    error: "sections[1] must be a non-empty string",
+  },
+  {
+    name: "read with (document) in sections",
+    params: { action: "read", path: head, sections: ["(document)"] },
+    error: "sections[0]: (document) is not valid as the section of read",
+  },
+  {
+    name: "read with sections and offset",
+    params: { action: "read", path: head, sections: ["A"], offset: 1 },
+    error: "offset is not valid with sections",
   },
   {
     name: "read with an empty section",

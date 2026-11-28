@@ -41,6 +41,10 @@ test("specs/markdown-tool.md#rendering: a call line shows the action and the pat
   assert.deepEqual(renderCall({ action: "read", path: "a.md", section: "3. Two" }).lines, [
     "Markdown read a.md › 3. Two",
   ]);
+  assert.deepEqual(
+    renderCall({ action: "read", path: "a.md", sections: ["1. One", "3. Two"] }).lines,
+    ["Markdown read a.md › 1. One, 3. Two"],
+  );
 });
 
 test("specs/markdown-tool.md#rendering: an edit call adds one line per operation with its string values", () => {

@@ -37,7 +37,7 @@ test("specs/markdown-tool.md#file-access: a relative path, with or without a lea
     for (const path of ["a.md", "@a.md", " @a.md "]) {
       assert.deepEqual(await outlineOf(instance, work, path), {
         reported: join(work, "a.md"),
-        entry: "1-1 # Work",
+        entry: "1-1 # Work (1 lines)",
       });
     }
   } finally {
@@ -54,14 +54,14 @@ test("specs/markdown-tool.md#file-access: a ~/ path resolves against the home di
     for (const path of ["~/a.md", " ~/a.md "]) {
       assert.deepEqual(await outlineOf(instance, work, path), {
         reported: join(home, "a.md"),
-        entry: "1-1 # Home",
+        entry: "1-1 # Home (1 lines)",
       });
     }
     const homeFile = join(home, "a.md");
     const bare = markdownRuntime({ home: homeFile });
     assert.deepEqual(await outlineOf(bare, work, "~"), {
       reported: homeFile,
-      entry: "1-1 # Home",
+      entry: "1-1 # Home (1 lines)",
     });
   } finally {
     cleanupRoots();
@@ -79,7 +79,7 @@ test("specs/markdown-tool.md#file-access: a bare @ names the session's cwd, and 
     const absolute = join(work, "a.md");
     assert.deepEqual(await outlineOf(instance, other, `  ${absolute}\t`), {
       reported: absolute,
-      entry: "1-1 # Work",
+      entry: "1-1 # Work (1 lines)",
     });
   } finally {
     cleanupRoots();

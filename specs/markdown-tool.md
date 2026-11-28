@@ -37,17 +37,18 @@ The parameter schema is a JSON object schema with `type: "object"` and
 is optional in the schema and admits `null` beside the type in the table, and each action accepts
 only its fields below. A field whose value is `null` counts as absent.
 
-| Field        | Type                                       | Actions                    | Contract                                                                                                                                                                                                                                      |
-| ------------ | ------------------------------------------ | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `action`     | `"outline" \| "read" \| "edit" \| "links"` | all                        | The operation to perform.                                                                                                                                                                                                                     |
-| `path`       | string                                     | all                        | The file ([file access](#file-access)).                                                                                                                                                                                                       |
-| `section`    | string? \| null                            | `outline`, `read`, `links` | A section address ([section addresses](#section-addresses)). Required for `read`. `outline`: the section listed with its descendants; `links`: the section whose span is the scope ([action `links`](#action-links)); absent: the whole file. |
-| `depth`      | integer? \| null                           | `outline`, `read`          | A heading level, `1` to `6`. `outline`: the deepest level listed ([action `outline`](#action-outline)). `read`: the deepest level shown whole ([action `read`](#action-read)).                                                                |
-| `preview`    | boolean? \| null                           | `outline`                  | `true`: each entry is followed by its preview line ([action `outline`](#action-outline)). Default `false`.                                                                                                                                    |
-| `offset`     | integer? \| null                           | `outline`, `read`, `links` | `outline`: the number of entries to skip, default `0`. `links`: the number of items to skip, default `0`. `read`: the file line number to start at, default the section's first line.                                                         |
-| `limit`      | integer? \| null                           | `outline`, `read`, `links` | `outline`: the most entries to list, `1` to `500`, default `100`. `links`: the most items to list, `1` to `500`, default `100`. `read`: the most display lines to return, `1` to `2000`, default `500`.                                       |
-| `revision`   | string? \| null                            | `edit`                     | Required for `edit`. The revision ([file access](#file-access)) the caller last saw.                                                                                                                                                          |
-| `operations` | operation[] (min 1, max 50)? \| null       | `edit`                     | Required for `edit`. The operations, applied in array order ([action `edit`](#action-edit)).                                                                                                                                                  |
+| Field        | Type                                       | Actions                    | Contract                                                                                                                                                                                                                                                                          |
+| ------------ | ------------------------------------------ | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `action`     | `"outline" \| "read" \| "edit" \| "links"` | all                        | The operation to perform.                                                                                                                                                                                                                                                         |
+| `path`       | string                                     | all                        | The file ([file access](#file-access)).                                                                                                                                                                                                                                           |
+| `section`    | string? \| null                            | `outline`, `read`, `links` | A section address ([section addresses](#section-addresses)). For `read`, one of `section` and `sections` is required. `outline`: the section listed with its descendants; `links`: the section whose span is the scope ([action `links`](#action-links)); absent: the whole file. |
+| `sections`   | string[] (min 1)? \| null                  | `read`                     | A non-empty list of section addresses ([section addresses](#section-addresses)) to read in one call ([action `read`](#action-read)); exclusive with `section` and `offset`.                                                                                                       |
+| `depth`      | integer? \| null                           | `outline`, `read`          | A heading level, `1` to `6`. `outline`: the deepest level listed ([action `outline`](#action-outline)). `read`: the deepest level shown whole ([action `read`](#action-read)).                                                                                                    |
+| `preview`    | boolean? \| null                           | `outline`                  | `true`: each entry is followed by its preview line ([action `outline`](#action-outline)). Default `false`.                                                                                                                                                                        |
+| `offset`     | integer? \| null                           | `outline`, `read`, `links` | `outline`: the number of entries to skip, default `0`. `links`: the number of items to skip, default `0`. `read`: the file line number to start at, default the section's first line; not valid with `sections`.                                                                  |
+| `limit`      | integer? \| null                           | `outline`, `read`, `links` | `outline`: the most entries to list, `1` to `500`, default `100`. `links`: the most items to list, `1` to `500`, default `100`. `read`: the most display lines to return, `1` to `2000`, default `500` (shared across sections when `sections` is given).                         |
+| `revision`   | string? \| null                            | `edit`                     | Required for `edit`. The revision ([file access](#file-access)) the caller last saw.                                                                                                                                                                                              |
+| `operations` | operation[] (min 1, max 50)? \| null       | `edit`                     | Required for `edit`. The operations, applied in array order ([action `edit`](#action-edit)).                                                                                                                                                                                      |
 
 An operation is a JSON object schema with `additionalProperties: false` and one required field,
 `op`; every other field is optional and admits `null`, and each `op` accepts only its fields:
@@ -63,7 +64,7 @@ An operation is a JSON object schema with `additionalProperties: false` and one 
 | `level`    | integer? \| null                                                                           | `set_level`                         | Required. The new heading level, `1` to `6`.              |
 
 The schema constrains the types of the tables, the values of `action`, `op`, and `position`, the
-length bounds of `operations`, and the set of admitted properties, and nothing else. A call the
+length bounds of `operations` and `sections`, and the set of admitted properties, and nothing else. A call the
 host rejects against it is a schema rejection (pi-dent-agent `specs/task.md`, Section 1). An integer is a
 number for which ECMAScript `Number.isInteger` holds.
 
@@ -86,37 +87,43 @@ the error text of the first failing check, in this order, before the file is rea
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
 | 1   | A field other than `action` and `path` that the action does not accept is present (first such field in table order of [parameter schema](#parameters)) | `<field> is not valid for action <action>`                                                    |
 | 2   | `path` is empty after trimming                                                                                                                         | `path must be a non-empty string`                                                             |
-| 3   | `read`: `section` is absent or empty after trimming; `outline`, `links`: `section` is present and empty after trimming                                 | `section must be a non-empty string`                                                          |
-| 4   | `section` is `(document)`, or `outline`: `section` is `(preamble)`                                                                                     | `<name> is not valid as the section of <action>`                                              |
-| 5   | `depth` is present and not an integer from 1 to 6                                                                                                      | `depth must be an integer from 1 to 6`                                                        |
-| 6   | `outline`, `links`: `offset` is present and not a non-negative integer                                                                                 | `offset must be a non-negative integer`                                                       |
-| 7   | `read`: `offset` is present and not a positive integer                                                                                                 | `offset must be a positive integer`                                                           |
-| 8   | `outline`, `links`: `limit` is present and not an integer from 1 to 500                                                                                | `limit must be an integer from 1 to 500`                                                      |
-| 9   | `read`: `limit` is present and not an integer from 1 to 2000                                                                                           | `limit must be an integer from 1 to 2000`                                                     |
-| 10  | `edit`: `revision` is absent or, after trimming, not 8 lowercase hexadecimal digits                                                                    | `revision must be the 8-digit revision an outline, read, or edit result showed for this file` |
-| 11  | `edit`: `operations` is absent, is not an array, or holds fewer than 1 or more than 50 elements                                                        | `operations must hold 1 to 50 operations`                                                     |
+| 3   | `read`: both `section` and `sections` are present                                                                                                      | `section and sections cannot both be given`                                                   |
+| 4   | `read`: neither `section` nor `sections` is present                                                                                                    | `read requires section or sections`                                                           |
+| 5   | `section` is present and empty after trimming (`outline`, `read`, `links`)                                                                             | `section must be a non-empty string`                                                          |
+| 6   | `read`: `sections` is present and is not a non-empty array                                                                                             | `sections must be a non-empty array of strings`                                               |
+| 7   | `read`: an element `sections[<i>]` is not a string or is empty after trimming                                                                          | `sections[<i>] must be a non-empty string`                                                    |
+| 8   | `section` is `(document)`, or `outline`: `section` is `(preamble)`                                                                                     | `<name> is not valid as the section of <action>`                                              |
+| 9   | `read`: an element `sections[<i>]` is `(document)`                                                                                                     | `sections[<i>]: (document) is not valid as the section of read`                               |
+| 10  | `depth` is present and not an integer from 1 to 6                                                                                                      | `depth must be an integer from 1 to 6`                                                        |
+| 11  | `outline`, `links`: `offset` is present and not a non-negative integer                                                                                 | `offset must be a non-negative integer`                                                       |
+| 12  | `read`: `offset` is present with `sections`                                                                                                            | `offset is not valid with sections`                                                           |
+| 13  | `read`: `offset` is present and not a positive integer                                                                                                 | `offset must be a positive integer`                                                           |
+| 14  | `outline`, `links`: `limit` is present and not an integer from 1 to 500                                                                                | `limit must be an integer from 1 to 500`                                                      |
+| 15  | `read`: `limit` is present and not an integer from 1 to 2000                                                                                           | `limit must be an integer from 1 to 2000`                                                     |
+| 16  | `edit`: `revision` is absent or, after trimming, not 8 lowercase hexadecimal digits                                                                    | `revision must be the 8-digit revision an outline, read, or edit result showed for this file` |
+| 17  | `edit`: `operations` is absent, is not an array, or holds fewer than 1 or more than 50 elements                                                        | `operations must hold 1 to 50 operations`                                                     |
 
-Then, for each operation in array order, checks 12 to 22; the first failure is reported:
+Then, for each operation in array order, checks 18 to 28; the first failure is reported:
 
 | #   | Check                                                                                                                                                                                                                                                                                                                                                                    | Error text                                                                                                                  |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| 12  | A field other than `op` that the op does not accept is present (first such field in table order of [parameter schema](#parameters))                                                                                                                                                                                                                                      | `operations[<i>]: <field> is not valid for op <op>`                                                                         |
-| 13  | A field the op accepts is absent (first such field in table order)                                                                                                                                                                                                                                                                                                       | `operations[<i>]: op <op> requires <field>`                                                                                 |
-| 14  | `section` or `at` is empty after trimming (first in table order)                                                                                                                                                                                                                                                                                                         | `operations[<i>]: <field> must be a non-empty string`                                                                       |
-| 15  | `section` is `(document)`, or `section` is `(preamble)` and `op` is not `replace_body`, or `at` is `(preamble)` (first in table order)                                                                                                                                                                                                                                   | `operations[<i>]: <name> is not valid as the <field> of op <op>`                                                            |
-| 16  | `at` is `(document)` and `position` is `before` or `after`                                                                                                                                                                                                                                                                                                               | `operations[<i>]: at (document) takes position first or last`                                                               |
-| 17  | `heading` is empty after trimming or contains a line ending                                                                                                                                                                                                                                                                                                              | `operations[<i>]: heading must be one non-empty line`                                                                       |
-| 18  | `level` is not an integer from 1 to 6                                                                                                                                                                                                                                                                                                                                    | `operations[<i>]: level must be an integer from 1 to 6`                                                                     |
-| 19  | `replace`, `insert`: the content block ([line rules](#edit-line-rules)) is empty, or its first line is not the heading line of a heading of the block parsed alone ([line rules](#edit-line-rules))                                                                                                                                                                      | `operations[<i>]: content must start with a heading line`                                                                   |
-| 20  | `replace`, `insert`: another heading of the block parsed alone has a level not greater than the first heading's                                                                                                                                                                                                                                                          | `operations[<i>]: content must be one section: line <n> is a heading of level <l>`                                          |
-| 21  | `replace_body`: the block parsed alone has a heading                                                                                                                                                                                                                                                                                                                     | `operations[<i>]: replace_body content must contain no heading: line <n> is one`                                            |
-| 22  | `replace`, `insert`, `replace_body`: a line of the content block is, without leading and trailing spaces and tabs, `[… <k> lines hidden: <a>-<b>]`, `--- cut: continue with offset <c> ---`, or `--- end of section ---`, or ends with ` · lines <a>-<b> · revision <r>`, `<k>`, `<a>`, `<b>`, and `<c>` being decimal integers and `<r>` 8 lowercase hexadecimal digits | `operations[<i>]: content line <n> is a marker of read, not file text; read the section without depth and to its end first` |
+| 18  | A field other than `op` that the op does not accept is present (first such field in table order of [parameter schema](#parameters))                                                                                                                                                                                                                                      | `operations[<i>]: <field> is not valid for op <op>`                                                                         |
+| 19  | A field the op accepts is absent (first such field in table order)                                                                                                                                                                                                                                                                                                       | `operations[<i>]: op <op> requires <field>`                                                                                 |
+| 20  | `section` or `at` is empty after trimming (first in table order)                                                                                                                                                                                                                                                                                                         | `operations[<i>]: <field> must be a non-empty string`                                                                       |
+| 21  | `section` is `(document)`, or `section` is `(preamble)` and `op` is not `replace_body`, or `at` is `(preamble)` (first in table order)                                                                                                                                                                                                                                   | `operations[<i>]: <name> is not valid as the <field> of op <op>`                                                            |
+| 22  | `at` is `(document)` and `position` is `before` or `after`                                                                                                                                                                                                                                                                                                               | `operations[<i>]: at (document) takes position first or last`                                                               |
+| 23  | `heading` is empty after trimming or contains a line ending                                                                                                                                                                                                                                                                                                              | `operations[<i>]: heading must be one non-empty line`                                                                       |
+| 24  | `level` is not an integer from 1 to 6                                                                                                                                                                                                                                                                                                                                    | `operations[<i>]: level must be an integer from 1 to 6`                                                                     |
+| 25  | `replace`, `insert`: the content block ([line rules](#edit-line-rules)) is empty, or its first line is not the heading line of a heading of the block parsed alone ([line rules](#edit-line-rules))                                                                                                                                                                      | `operations[<i>]: content must start with a heading line`                                                                   |
+| 26  | `replace`, `insert`: another heading of the block parsed alone has a level not greater than the first heading's                                                                                                                                                                                                                                                          | `operations[<i>]: content must be one section: line <n> is a heading of level <l>`                                          |
+| 27  | `replace_body`: the block parsed alone has a heading                                                                                                                                                                                                                                                                                                                     | `operations[<i>]: replace_body content must contain no heading: line <n> is one`                                            |
+| 28  | `replace`, `insert`, `replace_body`: a line of the content block is, without leading and trailing spaces and tabs, `[… <k> lines hidden: <a>-<b>]`, `--- cut: continue with offset <c> ---`, or `--- end of section ---`, or ends with ` · lines <a>-<b> · revision <r>`, `<k>`, `<a>`, `<b>`, and `<c>` being decimal integers and `<r>` 8 lowercase hexadecimal digits | `operations[<i>]: content line <n> is a marker of read, not file text; read the section without depth and to its end first` |
 
 A field an op accepts is one whose "Ops" cell names the op; every such field is required.
 `<field>`, `<action>`, and `<op>` are the field name, the action value, and the op value; `<i>`
-is the operation's 0-based index; `<name>` is `(document)` or `(preamble)`;
+is the operation's 0-based index (or `sections` index); `<name>` is `(document)` or `(preamble)`;
 `<n>` is the line number, in `content` as given counting from 1, of the first such heading's
-heading line, or for check 22 of the first such line; `<l>` is the heading's level. A value is
+heading line, or for check 28 of the first such line; `<l>` is the heading's level. A value is
 `(document)` or `(preamble)` when it equals that string after the stripping of [section addresses](#section-addresses). The checks of [documents](#documents), [action `outline`](#action-outline), [action `read`](#action-read), [action `edit`](#action-edit), and [action `links`](#action-links), which read the file, run after these: first
 those of [file access](#file-access), then the address resolution of [section addresses](#section-addresses), then those of the action's own
 section.
@@ -129,7 +136,7 @@ registered verbatim, and none cites a specification.
 The `description` is
 
 ```text
-Outline, read, and restructure a Markdown file by its headings; use it instead of the `read` tool for Markdown files. For a long file, outline first and read only the sections you need. Its outline action lists the sections with their line ranges; read returns one section; links lists the links, images, autolinks, and link definitions of the file or a section with their lines and destinations, plus unused definitions and references to missing ones, for you to check, and checks no target itself; edit replaces, inserts, deletes, moves, renames, or re-levels whole sections without quoting their old text, fits each placed section to the level of its new place, and applies its operations in order, all or none. Name a section by its heading text, its number ("3.1", "§3.1"), or a line copied from an outline or edit result; when that is not unique, put ancestor headings before it, joined by " > ". Numbered headings ("3.", "3.1") are renumbered to stay in sequence, and a section placed among them without a number gets one; a later operation of the same call names a renumbered section by its text without the number. To change words inside a section, use the `edit` tool.
+Outline, read, and restructure a Markdown file by its headings; use it instead of the `read` tool for Markdown files. For a long file, outline first and read only the sections you need. Its outline action lists the sections with their line ranges; read returns one or more sections; links lists the links, images, autolinks, and link definitions of the file or a section with their lines and destinations, plus unused definitions and references to missing ones, for you to check, and checks no target itself; edit replaces, inserts, deletes, moves, renames, or re-levels whole sections without quoting their old text, fits each placed section to the level of its new place, and applies its operations in order, all or none. Name a section by its heading text, its number ("3.1", "§3.1"), or a line copied from an outline or edit result; when that is not unique, put ancestor headings before it, joined by " > ". Numbered headings ("3.", "3.1") are renumbered to stay in sequence, and a section placed among them without a number gets one; a later operation of the same call names a renumbered section by its text without the number. To change words inside a section, use the `edit` tool.
 ```
 
 The `promptSnippet` is
@@ -142,13 +149,14 @@ Each property of the parameter schema, and of the operation schema, carries this
 
 | Field                   | `description`                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `action`                | `outline: list the sections with their line ranges. read: return one section's text. edit: apply structural operations. links: list the links and their destinations.`                                                                                                                                                                                                                                                                       |
+| `action`                | `outline: list the sections with their line ranges. read: return one or more sections' text. edit: apply structural operations. links: list the links and their destinations.`                                                                                                                                                                                                                                                               |
 | `path`                  | `Path to the Markdown file (relative or absolute).`                                                                                                                                                                                                                                                                                                                                                                                          |
-| `section`               | `outline and links: only this section and its subsections. read: required, the section to return; (preamble) names the text before the first heading, for read and links.`                                                                                                                                                                                                                                                                   |
+| `section`               | `outline and links: only this section and its subsections. read: the section to return (required unless sections is given); (preamble) names the text before the first heading, for read and links.`                                                                                                                                                                                                                                         |
+| `sections`              | `For read: multiple sections to return in one call, sharing the line and character budget; exclusive with section and offset.`                                                                                                                                                                                                                                                                                                               |
 | `depth`                 | `A heading level, 1 to 6. outline: the deepest level listed (1: # only, 2: # and ##, and so on); default: the deepest that fits in limit or 100 entries, whichever is greater. read: subsections deeper than this level are shown as their heading only.`                                                                                                                                                                                    |
-| `preview`               | `For outline: true also shows the first line under each heading. Default false.`                                                                                                                                                                                                                                                                                                                                                             |
-| `offset`                | `outline and links: how many entries or items to skip; copy it from the "More entries follow" or "More items follow" line. read: the file line to start at; copy it from the "cut: continue with offset" line.`                                                                                                                                                                                                                              |
-| `limit`                 | `outline and links: the most entries or items to list, 1 to 500, default 100. read: the most lines to return, 1 to 2000, default 500.`                                                                                                                                                                                                                                                                                                       |
+| `preview`               | `For outline: true also shows a short preview of each section's body. Default false.`                                                                                                                                                                                                                                                                                                                                                        |
+| `offset`                | `outline and links: how many entries or items to skip; copy it from the "More entries follow" or "More items follow" line. read: the file line to start at (not valid with sections); copy it from the "cut: continue with offset" line.`                                                                                                                                                                                                    |
+| `limit`                 | `outline and links: the most entries or items to list, 1 to 500, default 100. read: the most lines to return, 1 to 2000, default 500 (shared across sections).`                                                                                                                                                                                                                                                                              |
 | `revision`              | `Required for edit: the revision shown by your latest outline, read, or edit of this file.`                                                                                                                                                                                                                                                                                                                                                  |
 | `operations`            | `Required for edit: 1 to 50 operations, each applied to the result of the ones before it.`                                                                                                                                                                                                                                                                                                                                                   |
 | `operations[].op`       | `replace: the whole section, with content. replace_body: the text under the heading, before its subsections, with content (empty removes it). insert: content at position relative to at. delete: the section with its subsections. move: the section to position relative to at. rename: set its heading text. set_level: set its heading level; its subsections shift with it, and it is refused when other sections would change parent.` |
@@ -299,7 +307,8 @@ separator: a space, `>`, and a space.
 
 A section address names a section. Its value is trimmed, then stripped, in this order and each at
 most once, of a leading `* `, a leading line range `<a>-<b> ` (`<a>` and `<b>` decimal integers,
-then one space), and a trailing ` (+<k> hidden)` (`<k>` a decimal integer). The stripped value
+then one space), a trailing ` (+<k> hidden)` (`<k>` a decimal integer), and a trailing
+` (<n> lines)` (`<n>` a decimal integer). The stripped value
 `(preamble)` names the preamble and `(document)` the document, where [validation](#validation) admits them,
 whether or not a line range was stripped. Any other stripped value is split at each occurrence of
 the separator into components, each trimmed and then stripped, at most once, of leading heading
@@ -401,14 +410,21 @@ The text is these lines, joined by one line feed, each present only under its co
 | `(no headings down to level <d>; the shallowest is level <l>)`             | the document has headings, and none is an entry                  |
 | `More entries follow: repeat the call with offset: <next>`                 | `<next>`, `offset` plus the number shown, is less than `<total>` |
 
-An entry line is `<start>-<end> <marks> <component><hidden>`: the section's heading line and end
-line, `#` repeated as many times as its level, its component ([section addresses](#section-addresses)), and
+An entry line is `<start>-<end> <marks> <component> (<n> lines)<hidden>`: the section's heading line and end
+line, `#` repeated as many times as its level, its component ([section addresses](#section-addresses)),
+` (<n> lines)` with `<n>` the number of lines in its span (`<end> - <start> + 1`, the word `lines`
+staying plural whatever the number), and
 ` (+<k> hidden)` when `<k>`, the number of its descendants that are not entries, is at least 1,
-else empty. A preview line is four spaces followed by the first line of the section's own body,
-flattened (pi-dent-agent `specs/search-tool.md`, Section 3.4) and, when longer than 100 characters,
-cut to its first 100 characters followed by `…` (U+2026); a section with an empty own body has
-no preview line. `<lines>` is the file's line count, `<l>` the least level of the document's
-headings, the word `lines` staying plural whatever the number, and `<start>` and `<end>` of the frontmatter and preamble their first and last lines.
+else empty. A preview line is four spaces followed by the first paragraph of the section's own
+body — consecutive non-blank lines from the first line of its own body up to the first blank
+line or the end of its own body — flattened (pi-dent-agent `specs/search-tool.md`, Section 3.4),
+then shortened: when the flattened text contains a sentence end (`.`, `!`, or `?` followed by
+zero or more of `"`, `'`, `)`, `]`, and then a space or the end of the flattened text) whose end
+is within its first 160 characters, it is cut right after that first sentence end; otherwise, when
+longer than 160 characters, it is cut to its first 160 characters followed by `…` (U+2026). A
+section with an empty own body has no preview line. `<lines>` is the file's line count, `<l>` the
+least level of the document's headings, the word `lines` staying plural whatever the number, and
+`<start>` and `<end>` of the frontmatter and preamble their first and last lines.
 
 `details` is
 `{ action: "outline", path, revision, lines, depth, total, offset, more, frontmatter?, preamble?, entries: [<entry>…] }`:
@@ -420,36 +436,55 @@ preview line's text without its four spaces.
 
 ## 4. Action `read` {#action-read}
 
-The read range is the span of the addressed section, or the preamble's lines for `(preamble)`;
-`<start>` and `<end>` are its first and last lines. The call MUST be rejected as a tool error
-with the text `offset <offset> is outside <address> (lines <start>-<end>)` when `offset` is
-outside that range, `<address>` being the full address or `(preamble)`.
+When `section` is given, the read range is the span of the addressed section, or the preamble's
+lines for `(preamble)`; `<start>` and `<end>` are its first and last lines. The call MUST be
+rejected as a tool error with the text
+`offset <offset> is outside <address> (lines <start>-<end>)` when `offset` is outside that range,
+`<address>` being the full address or `(preamble)`.
 
-The display lines are the range's lines in order, except that with `depth` each collapsed
-section shows only its heading's lines followed, when its span has further lines, by one marker
-line `[… <k> lines hidden: <first>-<last>]` in place of them, `<k>` being their number and
-`<first>` and `<last>` their first and last lines. A collapsed section is a descendant of the
-addressed section whose level is greater than `depth` and none of whose ancestors that are
+When `sections` is given, each element is resolved in array order; if any fails to resolve, the
+call MUST be rejected as a tool error.
+
+For each read range, the display lines are the range's lines in order, except that with `depth`
+each collapsed section shows only its heading's lines followed, when its span has further lines,
+by one marker line `[… <k> lines hidden: <first>-<last>]` in place of them, `<k>` being their
+number and `<first>` and `<last>` their first and last lines. A collapsed section is a descendant
+of the addressed section whose level is greater than `depth` and none of whose ancestors that are
 descendants of the addressed section is collapsed. A display line's first and last lines are its
 own line, or `<first>` and `<last>` for a marker line.
 
-The shown lines are the display lines from the first whose last line is at least `offset`
-(default `<start>`), as many as `limit` allows and while their text, joined by line feeds, stays
-within 50000 characters; at least one is shown. A first shown line longer than 50000 characters
-is cut to its first 50000 characters followed by `…`.
+With `section`, the shown lines are the display lines from the first whose last line is at least
+`offset` (default `<start>`), as many as `limit` allows and while their text, joined by line
+feeds, stays within 50000 characters; at least one is shown. A first shown line longer than
+50000 characters is cut to its first 50000 characters followed by `…`.
 
-The text is these parts, joined by one line feed:
+With `sections`, the call shares one budget of `limit` display lines and 50000 characters (for
+all shown display lines across the call, joined by line feeds) across the ranges in array order.
+For each range, display lines are taken from its first display line while the total shown display
+lines stay within `limit` and their total characters stay within 50000. For the first range in
+the call, at least one display line is shown, cut to its first 50000 characters followed by `…`
+if longer; for any subsequent range, if the remaining budget admits no display line, zero lines
+are shown for it and its next line is its first display line.
+
+For each read range, its parts are, in order:
 
 1. `<path> · <address> · lines <start>-<end> · revision <revision>`.
-2. The shown lines, without their line endings.
-3. `--- end of section ---` when the last display line is shown, else
-   `--- cut: continue with offset <next> ---`, `<next>` being the first line of the first display
+2. Its shown lines, without their line endings.
+3. `--- end of section ---` when its last display line is shown, else
+   `--- cut: continue with offset <next> ---`, `<next>` being the first line of its first display
    line not shown.
 
-`details` is
+The text is the parts of the read ranges in order, joined by one line feed.
+
+With `section`, `details` is
 `{ action: "read", path, revision, address, level, start, end, from, to, next? }`: `level`
 `null` for the preamble, `from` the first line of the first shown display line, `to` the last
 file line the shown lines cover, and `next` `<next>`, present exactly when the cut line is.
+
+With `sections`, `details` is `{ action: "read", path, revision, sections: [<entry>…] }`, where
+each `<entry>` is `{ address, level, start, end, from?, to?, next? }`: `from` and `to` present
+exactly when at least one display line was shown for that range, and `next` present exactly when
+its cut line was shown.
 
 ## 5. Action `edit` {#action-edit}
 
@@ -783,7 +818,8 @@ it has a text.
 
 The host draws each call in its default tool shell and its result as its text. `renderCall`
 MUST show lines joined by one line feed: `Markdown <action> <path>`, followed by ` › <section>`
-when `section` is given; for `edit`, then one line per operation: two spaces, then the values of
+when `section` is given, or ` › <sections>` (the string elements of `sections` joined by `, `)
+when `section` is not given and `sections` is an array containing at least one string; for `edit`, then one line per operation: two spaces, then the values of
 its `op`, `section`, `position`, and `at` that are strings, in that order, joined by one space.
 While the host is still receiving the arguments, a value that is not yet a string is left out,
 and `renderCall` MUST NOT throw. The component `renderCall` returns MUST carry no horizontal
@@ -830,7 +866,7 @@ shipped file makes at runtime resolves under a clean install, either to a packag
   changed since.
 - The frontmatter cannot be named by an address; a copied `(frontmatter)` outline line names no
   section.
-- A heading whose text ends with ` (+<k> hidden)` cannot be named by an address that ends with that text, because [section addresses](#section-addresses) strips that suffix first.
+- A heading whose text ends with ` (+<k> hidden)` or ` (<n> lines)` cannot be named by an address that ends with that text, because [section addresses](#section-addresses) strips those suffixes first.
 - A heading whose text is `(preamble)` or `(document)` cannot be named by an address that is
   that text alone.
 - Two siblings whose components coincide, such as a heading written `X [2]` and the second of two
